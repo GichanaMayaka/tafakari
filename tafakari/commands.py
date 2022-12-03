@@ -7,7 +7,6 @@ from .database import db
 from .models.users import User
 
 
-@with_appcontext
 def create_db(database: SQLAlchemy = db) -> None:
     database.create_all()
 

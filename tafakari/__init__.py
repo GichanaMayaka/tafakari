@@ -4,6 +4,7 @@ from .database import db, SQLALCHEMY_DATABASE_URI
 from .models.users import User
 from .models.subreddit import Subreddit
 from .models.posts import Post
+from .models.comments import Comments
 from .commands import create_db, seed_users, drop_db, recreate_db
 from .extensions import bcrypt
 
