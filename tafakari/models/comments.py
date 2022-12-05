@@ -17,3 +17,6 @@ class Comments(db.Model):
 
     def __init__(self, comment: str) -> None:
         self.comment = comment
+
+    def __repr__(self) -> str:
+        return f"<Comment: {self.comment}>"

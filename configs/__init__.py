@@ -8,7 +8,7 @@ class AppConfig(BaseModel):
     POSTGRES_USERNAME: Final[str] = "postgres"
     POSTGRES_PASSWORD: Final[str] = "password"
     POSTGRES_DATABASE_NAME: Final[str] = "tafakari"
-    POSTGRES_PORT: Final[str] = 5432
+    POSTGRES_PORT: Final[int] = 5432
 
 
 class GlobalConfig(BaseSettings):

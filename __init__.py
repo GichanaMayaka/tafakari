@@ -1,3 +1,4 @@
 """
-    Added so pytest, for some reason, runs
+    Added so pytest runs
 """
+from .tafakari import create_app

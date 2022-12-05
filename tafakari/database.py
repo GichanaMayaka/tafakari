@@ -1,5 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 
-SQLALCHEMY_DATABASE_URI: str = "postgresql://postgres:password@localhost:5432/tafakari"
+from ..configs import configs
+
+SQLALCHEMY_DATABASE_URI: str = f"postgresql://%s:%s@%s:%s/%s" % (
+    configs.APP_CONFIG.POSTGRES_USERNAME,
+    configs.APP_CONFIG.POSTGRES_PASSWORD,
+    configs.APP_CONFIG.POSTGRES_HOSTNAME,
+    configs.APP_CONFIG.POSTGRES_PORT,
+    configs.APP_CONFIG.POSTGRES_DATABASE_NAME
+)
 
 db = SQLAlchemy()
