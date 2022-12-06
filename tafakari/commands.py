@@ -63,7 +63,6 @@ def seed_posts(num_posts: int) -> None:
             Post(
                 title=fakes.sentence(),
                 text=fakes.text(),
-                created_by=random.randint(1, 3)
             )
         )
 

@@ -8,7 +8,9 @@ from .models.posts import Post
 from .models.subreddit import Subreddit
 from .models.users import User
 from ..configs import configs
-from .views.users import user
+from .views.users_views import user
+from .views.subreddits_views import subreddits
+from .views.posts_views import posts
 
 
 def create_app(configurations: object = configs) -> Flask:
@@ -18,8 +20,7 @@ def create_app(configurations: object = configs) -> Flask:
 
     register_extensions(app=app)
     register_commands(app=app)
-
-    print(configurations)
+    register_blueprints(app=app)
 
     @app.route("/", methods=["GET"])
     def index():
@@ -42,6 +43,8 @@ def register_commands(app: Flask) -> None:
 
 def register_blueprints(app: Flask) -> None:
     app.register_blueprint(blueprint=user)
+    app.register_blueprint(blueprint=subreddits)
+    app.register_blueprint(blueprint=posts)
 
 
 if __name__ == "__main__":

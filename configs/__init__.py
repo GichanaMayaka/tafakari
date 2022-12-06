@@ -33,6 +33,11 @@ class ProdConfig(GlobalConfig):
         env_prefix: str = "PROD_"
 
 
+class TestConfig(GlobalConfig):
+    TESTING: Final[bool] = True
+    POSTGRES_DATABASE_NAME: Final[str] = "testTafakari"
+
+
 class FactoryConfig:
     """Returns a config instance dependending on the ENV_STATE variable."""
 
@@ -45,6 +50,9 @@ class FactoryConfig:
 
         elif self.env_state == "prod":
             return ProdConfig()
+
+        elif self.env_state == "test":
+            return TestConfig()
 
 
 configs = FactoryConfig(GlobalConfig().ENV_STATE)()
