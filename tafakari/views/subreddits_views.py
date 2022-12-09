@@ -1,40 +1,38 @@
+from http import HTTPStatus
+
 import pendulum
-from flask import Blueprint
+from flask import Blueprint, jsonify
+from flask_login import current_user, login_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from .schemas import CreateSubredditPostSchema, UserRequestSchema, PostsRequestSchema
+from .schemas import CreateSubredditPostSchema, UserRequestSchema
 from ..database import db
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from ..models.posts import Post
 
 subreddits = Blueprint("subreddit", __name__, template_folder="templates")
 
 
 @subreddits.route("/create/subreddit", methods=["POST"])
+@login_required
 @validate(body=CreateSubredditPostSchema)
 def create_subreddit(body: CreateSubredditPostSchema):
     subreddit = Subreddit.query.filter_by(name=body.name).first()
 
-    if not subreddit:
-        new_subreddit = Subreddit(
+    if not subreddit and current_user:
+        new_subreddit = Subreddit.create(
             name=body.name,
             description=body.description,
+            created_by=current_user.id
         )
-        user = User.query.filter_by(username="gichana").first()
-        new_subreddit.created_by = user.id
 
         db.session.add(new_subreddit)
         db.session.commit()
 
-        return {
-            "message": "Created"
-        }, 200
+        return jsonify(message="created"), HTTPStatus.OK
 
-    return {
-        "message": f"A subreddit with the title: {body.name}, already exists"
-    }, 409
+    return jsonify(message=f"A subreddit with the title: {body.name}, already exists"), HTTPStatus.CONFLICT
 
 
 @subreddits.route("/get/subreddit", methods=["GET"])
@@ -44,19 +42,19 @@ def get_all_subreddits():
     if all_subs:
         return {
             "subreddits": [{"id": sub.id, "name": sub.name} for sub in all_subs]
-        }, 200
+        }, HTTPStatus.OK
 
     return {
         "message": "No Subreddits"
-    }, 404
+    }, HTTPStatus.NOT_FOUND
 
 
 @subreddits.route("/get/subreddit/<subreddit_id>", methods=["GET"])
 def get_subreddit_by_id(subreddit_id: int):
-    subreddit = Subreddit.query.filter_by(id=subreddit_id).first()
+    subreddit = Subreddit.get_by_id(subreddit_id)
 
     if subreddit:
-        user = User.query.filter_by(id=subreddit.created_by).first()
+        user = User.get_by_id(subreddit.created_by)
 
         return {
             "subreddit": {
@@ -65,21 +63,20 @@ def get_subreddit_by_id(subreddit_id: int):
                 "created_by": user.username,
                 "created_on": subreddit.created_on
             }
-        }, 200
+        }, HTTPStatus.OK
 
     return {
         "message": "No Subreddit Found"
-    }, 404
+    }, HTTPStatus.NOT_FOUND
 
 
 @subreddits.route("/join/subreddit/<subreddit_id>", methods=["GET"])
+@login_required
 def join_a_subreddit(subreddit_id: int):
-    subreddit = Subreddit.query.filter_by(id=subreddit_id).first()
+    subreddit = Subreddit.get_by_id(subreddit_id)
 
-    if subreddit:
-        user = User.query.filter_by(username="gichana").first()
-
-        subreddit.users.append(user)
+    if subreddit and current_user:
+        subreddit.users.append(current_user)
 
         db.session.add(subreddit)
         db.session.commit()
@@ -87,11 +84,11 @@ def join_a_subreddit(subreddit_id: int):
         return {
             "message": f"Successfully joined {subreddit.name}",
             "time_of_join": f"{pendulum.now()}"
-        }, 200
+        }, HTTPStatus.OK
 
     return {
         "message": "Subreddit Not Found"
-    }, 404
+    }, HTTPStatus.NOT_FOUND
 
 
 @subreddits.route("/delete/subreddit/<subreddit_id>", methods=["DELETE"])
@@ -108,8 +105,8 @@ def delete_a_subreddit(subreddit_id: int, body: UserRequestSchema):
             db.session.commit()
             return {
                 "message": "Subreddit Deleted"
-            }, 202
+            }, HTTPStatus.ACCEPTED
 
     return {
         "message": "You are not authorised to delete this subreddit"
-    }, 403
+    }, HTTPStatus.FORBIDDEN

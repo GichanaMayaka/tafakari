@@ -1,74 +1,94 @@
+from http import HTTPStatus
+
 import pendulum
-from flask import Blueprint
+from flask import Blueprint, jsonify
+from flask_login import login_required, current_user
 from flask_pydantic import validate
 
 from .schemas import PostsRequestSchema, PostsBaseModel
 from ..database import db
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
-from ..models.users import User
 
 posts = Blueprint("post", __name__, template_folder="templates")
 
 
 @posts.route("/create/post", methods=["POST"])
 @validate(body=PostsRequestSchema)
+@login_required
 def create_subreddit_post(body: PostsRequestSchema):
-    user = User.query.filter_by(id=body.metadata.user_id).first()
-    subreddit = Subreddit.query.filter_by(id=body.metadata.subreddit_id).first()
+    subreddit = Subreddit.get_by_id(body.metadata.subreddit_id)
 
-    if user and subreddit:
-        post_to_create = Post(
+    if current_user and subreddit:
+        post_to_create = Post.create(
             title=body.title,
-            text=body.text
+            text=body.text,
+            created_by=current_user.id,
+            belongs_to=subreddit.id
         )
-        post_to_create.created_by = user.id
-        post_to_create.belongs_to = subreddit.id
 
         db.session.add(post_to_create)
         db.session.commit()
 
-        return {
+        return jsonify({
             "message": f"Post {body.title} created",
             "timestamp": pendulum.now()
-        }, 201
+        }), HTTPStatus.CREATED
 
-    elif not user:
+    elif not current_user:
         return {
             "message": "No user with such an Id exists."
-        }, 403
+        }, HTTPStatus.FORBIDDEN
 
     elif not subreddit:
         return {
             "message": "Cannot create a post to a non-existent subreddit."
-        }, 404
+        }, HTTPStatus.NOT_FOUND
     return {
         "message": "Fatal Failure"
-    }, 417
+    }, HTTPStatus.EXPECTATION_FAILED
 
 
 @posts.route("/get/posts", methods=["POST"])
 @validate(body=PostsBaseModel)
 def get_all_posts(body: PostsBaseModel):
     all_posts = Post.query.filter_by(belongs_to=body.subreddit_id).all()
-    subreddit = Subreddit.query.filter_by(id=body.subreddit_id).first()
+    subreddit = Subreddit.get_by_id(body.subreddit_id)
 
     if all_posts:
         return {
             "subreddit": subreddit.name,
             "Posts": [{"title": post.title, "text": post.text} for post in all_posts]
-        }, 200
+        }, HTTPStatus.OK
 
     return {
         "message": "No posts yet"
-    }, 404
+    }, HTTPStatus.NOT_FOUND
+
+
+@posts.route("/get/posts/<post_id>", methods=["GET"])
+def get_post_by_id(post_id: int):
+    post = Post.get_by_id(post_id)
+
+    if post:
+        return jsonify(
+            post=post.title,
+            text=post.text,
+            created_on=post.created_on,
+            created_by=post.created_by
+        ), HTTPStatus.OK
+
+    return jsonify(
+        message="No post yet"
+    ), HTTPStatus.NOT_FOUND
 
 
 @posts.route("/get/post/<post_id>/upvote", methods=["GET"])
+@login_required
 def upvote_a_post(post_id: int):
-    post = Post.query.filter_by(id=post_id).first()
+    post = Post.get_by_id(post_id)
 
-    if post:
+    if post and current_user:
         post.votes += 1
 
         db.session.add(post)
@@ -76,18 +96,19 @@ def upvote_a_post(post_id: int):
 
         return {
             "message": "Up-voted Successfully"
-        }, 202
+        }, HTTPStatus.ACCEPTED
 
     return {
         "message": "The post you selected does not exist"
-    }, 406
+    }, HTTPStatus.NOT_ACCEPTABLE
 
 
 @posts.route("/get/post/<post_id>/downvote", methods=["GET"])
+@login_required
 def downvote_a_post(post_id: int):
-    post = Post.query.filter_by(id=post_id).first()
+    post = Post.get_by_id(post_id)
 
-    if post:
+    if post and current_user:
         post.votes -= 1
 
         db.session.add(post)
@@ -95,8 +116,8 @@ def downvote_a_post(post_id: int):
 
         return {
             "message": "Down-voted Successfully"
-        }, 202
+        }, HTTPStatus.ACCEPTED
 
     return {
         "message": "The post you selected does not exist"
-    }, 406
+    }, HTTPStatus.NOT_ACCEPTABLE

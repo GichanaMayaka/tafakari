@@ -1,11 +1,11 @@
 import pendulum
+from sqlalchemy_serializer import SerializerMixin
 
-from ..database import db
+from ..database import db, CRUDMixin
 
 
-class Post(db.Model):
+class Post(db.Model, CRUDMixin, SerializerMixin):
     __tablename__ = "post"
-    id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False, unique=False)
     text = db.Column(db.String(1000), nullable=True, unique=False)
     votes = db.Column(db.Integer, nullable=False, default=1)
@@ -28,10 +28,6 @@ class Post(db.Model):
             lazy="joined"
         )
     )
-
-    def __init__(self, title: str, text: str) -> None:
-        self.title = title
-        self.text = text
 
     def __repr__(self) -> str:
         return f"<Post: {self.title}>"

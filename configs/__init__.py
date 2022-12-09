@@ -1,4 +1,5 @@
-from typing import Optional, Final
+import secrets
+from typing import Final, Any
 
 from pydantic import BaseSettings, BaseModel, Field
 
@@ -8,12 +9,15 @@ class AppConfig(BaseModel):
     POSTGRES_USERNAME: Final[str] = "postgres"
     POSTGRES_PASSWORD: Final[str] = "password"
     POSTGRES_DATABASE_NAME: Final[str] = "tafakari"
-    POSTGRES_PORT: Final[int] = 5432
+    POSTGRES_PORT: Final[int] = 5433
+    SESSION_TYPE: Final[str] = "redis"
+    SECRET_KEY: Final[str] = secrets.token_hex()
+    JWT_ALGORITHM: Final[str] = "HS256"
 
 
 class GlobalConfig(BaseSettings):
     APP_CONFIG: AppConfig = AppConfig()
-    ENV_STATE: Optional[str] = Field(None, env="ENV_STATE")
+    ENV_STATE: str = Field(None, env="ENV_STATE")
 
     class Config:
         env_file: str = ".env"
@@ -34,14 +38,13 @@ class ProdConfig(GlobalConfig):
 
 
 class TestConfig(GlobalConfig):
-    TESTING: Final[bool] = True
-    POSTGRES_DATABASE_NAME: Final[str] = "testTafakari"
+    TESTING: Final[str] = "True"
 
 
 class FactoryConfig:
-    """Returns a config instance dependending on the ENV_STATE variable."""
+    """Returns a config instance depending on the ENV_STATE variable."""
 
-    def __init__(self, env_state: Optional[str]):
+    def __init__(self, env_state: str):
         self.env_state = env_state
 
     def __call__(self):

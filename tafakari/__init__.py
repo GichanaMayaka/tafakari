@@ -1,22 +1,23 @@
 from flask import Flask
 
-from .commands import create_db, seed_users, drop_db, recreate_db, seed_posts, seed
-from .database import db, SQLALCHEMY_DATABASE_URI
-from .extensions import bcrypt
+from .commands import (create_tables, drop_db, recreate_db, seed, seed_posts,
+                       seed_users, create_db)
+from .database import SQLALCHEMY_DATABASE_URI, db
+from .extensions import bcrypt, migrations
 from .models.comments import Comments
 from .models.posts import Post
 from .models.subreddit import Subreddit
 from .models.users import User
-from ..configs import configs
-from .views.users_views import user
-from .views.subreddits_views import subreddits
 from .views.posts_views import posts
+from .views.subreddits_views import subreddits
+from .views.users_views import user
+from ..configs import configs
 
 
-def create_app(configurations: object = configs) -> Flask:
+def create_app(database_uri: str = SQLALCHEMY_DATABASE_URI, configurations: object = configs) -> Flask:
     app = Flask(__name__)
     app.config.from_object(configurations)
-    app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
 
     register_extensions(app=app)
     register_commands(app=app)
@@ -34,10 +35,11 @@ def create_app(configurations: object = configs) -> Flask:
 def register_extensions(app: Flask) -> None:
     db.init_app(app=app)
     bcrypt.init_app(app=app)
+    migrations.init_app(app=app)
 
 
 def register_commands(app: Flask) -> None:
-    for command in [create_db, seed_users, drop_db, recreate_db, seed_posts, seed]:
+    for command in [create_db, create_tables, seed_users, drop_db, recreate_db, seed_posts, seed]:
         app.cli.command()(command)
 
 

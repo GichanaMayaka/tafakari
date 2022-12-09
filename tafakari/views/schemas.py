@@ -3,28 +3,29 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class BaseTafakariModel(BaseModel):
+class BaseTafakariSchema(BaseModel):
     class Config:
         orm_mode = True
 
 
-class UserRequestSchema(BaseTafakariModel):
+class UserRequestSchema(BaseTafakariSchema):
     username: str
     email: str
     password: str
+    is_admin: Optional[bool]
 
 
-class CreateSubredditPostSchema(BaseTafakariModel):
+class CreateSubredditPostSchema(BaseTafakariSchema):
     name: str
     description: str
 
 
-class PostsBaseModel(BaseTafakariModel):
+class PostsBaseModel(BaseTafakariSchema):
     subreddit_id: int
     user_id: int
 
 
-class PostsRequestSchema(BaseTafakariModel):
+class PostsRequestSchema(BaseTafakariSchema):
     metadata: PostsBaseModel
     title: str
     text: str

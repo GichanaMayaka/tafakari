@@ -1,15 +1,34 @@
-import random
-
 import click
 from faker import Faker
+from sqlalchemy import create_engine
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.engine.mock import MockConnection
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from .database import db
+from .database import db, SQLALCHEMY_DATABASE_URI, TEST_DATABASE_URI
 from .models.posts import Post
 from .models.users import User
 
 
-def create_db(database: SQLAlchemy = db) -> None:
+def database_engine(uri: str) -> MockConnection:
+    engine = create_engine(
+        uri
+    )
+    return engine
+
+
+def create_db(uri: str = SQLALCHEMY_DATABASE_URI) -> None:
+    engine = database_engine(uri)
+
+    if not database_exists(engine.url):
+        create_database(engine.url)
+
+
+def create_test_db() -> None:
+    create_db(uri=TEST_DATABASE_URI)
+
+
+def create_tables(database: SQLAlchemy = db) -> None:
     database.create_all()
 
 
@@ -43,7 +62,8 @@ def seed_users(num_users: int) -> None:
         User(
             username="gichana",
             email="gichana@email.com",
-            password="password"
+            password="password",
+            is_admin=True
         )
     )
 
@@ -53,32 +73,19 @@ def seed_users(num_users: int) -> None:
     db.session.commit()
 
 
-@click.option("--num_posts", default=18, help="number of posts")
-def seed_posts(num_posts: int) -> None:
-    fakes = Faker()
-    posts = []
-
-    for _ in range(num_posts):
-        posts.append(
-            Post(
-                title=fakes.sentence(),
-                text=fakes.text(),
-            )
-        )
-
-    for post in posts:
-        db.session.add(post)
-
-    db.session.commit()
-
-
-def drop_db() -> None:
+def drop_tables() -> None:
     """Drops the database."""
-    if click.confirm('Are you sure?', abort=True):
+    if click.confirm('Are you sure?', default=False, abort=True):
         db.drop_all()
 
 
 def recreate_db() -> None:
     """Same as running drop_db() and create_db()."""
-    drop_db()
-    create_db()
+    drop_tables()
+    create_tables()
+
+
+def drop_db() -> None:
+    engine = database_engine(uri=SQLALCHEMY_DATABASE_URI)
+    if database_exists(engine.url):
+        drop_database(engine.url)
