@@ -2,19 +2,21 @@ import uuid
 
 import pendulum
 from sqlalchemy_serializer import SerializerMixin
-from flask_login import UserMixin
 
-from ..database import CRUDMixin, db
-from ..extensions import bcrypt
+from . import CRUDMixin
 from .usersubreddit import user_subreddit_junction_table
+from ..database import db
+from ..extensions import bcrypt
 
 
-class User(db.Model, CRUDMixin, SerializerMixin, UserMixin):
+class User(db.Model, CRUDMixin, SerializerMixin):
     """
         Represents a user
     """
     # TODO: Add karma functionality
     __tablename__ = "user"
+    serialize_rules = ('comments.comment', 'post.title', 'subreddits.description',)
+    
     external_id = db.Column(
         db.String,
         nullable=False,

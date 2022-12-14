@@ -1,7 +1,8 @@
 import pendulum
 
-from ..database import db, CRUDMixin
+from . import CRUDMixin
 from .usersubreddit import user_subreddit_junction_table
+from ..database import db
 
 
 class Subreddit(db.Model, CRUDMixin):

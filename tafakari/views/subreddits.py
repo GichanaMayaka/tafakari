@@ -2,12 +2,11 @@ from http import HTTPStatus
 
 import pendulum
 from flask import Blueprint, jsonify
-from flask_login import current_user, login_required
+from flask_jwt_extended import jwt_required, current_user
 from flask_pydantic import validate
 from sqlalchemy import and_
 
 from .schemas import CreateSubredditPostSchema, UserRequestSchema
-from ..database import db
 from ..models.subreddit import Subreddit
 from ..models.users import User
 
@@ -15,7 +14,7 @@ subreddits = Blueprint("subreddit", __name__, template_folder="templates")
 
 
 @subreddits.route("/create/subreddit", methods=["POST"])
-@login_required
+@jwt_required(fresh=True)
 @validate(body=CreateSubredditPostSchema)
 def create_subreddit(body: CreateSubredditPostSchema):
     subreddit = Subreddit.query.filter_by(name=body.name).first()
@@ -27,8 +26,7 @@ def create_subreddit(body: CreateSubredditPostSchema):
             created_by=current_user.id
         )
 
-        db.session.add(new_subreddit)
-        db.session.commit()
+        new_subreddit.save()
 
         return jsonify(message="created"), HTTPStatus.OK
 
@@ -71,15 +69,14 @@ def get_subreddit_by_id(subreddit_id: int):
 
 
 @subreddits.route("/join/subreddit/<subreddit_id>", methods=["GET"])
-@login_required
+@jwt_required(fresh=True)
 def join_a_subreddit(subreddit_id: int):
     subreddit = Subreddit.get_by_id(subreddit_id)
 
     if subreddit and current_user:
         subreddit.users.append(current_user)
 
-        db.session.add(subreddit)
-        db.session.commit()
+        subreddit.save()
 
         return {
             "message": f"Successfully joined {subreddit.name}",
@@ -101,8 +98,8 @@ def delete_a_subreddit(subreddit_id: int, body: UserRequestSchema):
             and_(Subreddit.id == subreddit_id, Subreddit.created_by == creator_id.id)
         ).first()
         if subreddit_creator:
-            db.session.delete(subreddit_creator)
-            db.session.commit()
+            subreddit_creator.delete()
+
             return {
                 "message": "Subreddit Deleted"
             }, HTTPStatus.ACCEPTED

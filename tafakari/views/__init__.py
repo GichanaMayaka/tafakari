@@ -1,7 +1,9 @@
-from . import posts_views, users_views, subreddits_views
+from . import posts, users, subreddits
 
 __all__: object = [
-    "posts_views",
-    "users_views",
-    "subreddits_views"
+    "posts",
+    "subreddits",
+    "users",
+    "comments",
+    "schemas"
 ]

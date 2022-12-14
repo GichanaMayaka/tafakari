@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import pendulum
 from flask import Blueprint, jsonify
-from flask_login import login_required, current_user
+from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 
 from .schemas import PostsRequestSchema, PostsBaseModel
@@ -15,7 +15,7 @@ posts = Blueprint("post", __name__, template_folder="templates")
 
 @posts.route("/create/post", methods=["POST"])
 @validate(body=PostsRequestSchema)
-@login_required
+@jwt_required(fresh=True)
 def create_subreddit_post(body: PostsRequestSchema):
     subreddit = Subreddit.get_by_id(body.metadata.subreddit_id)
 
@@ -27,8 +27,7 @@ def create_subreddit_post(body: PostsRequestSchema):
             belongs_to=subreddit.id
         )
 
-        db.session.add(post_to_create)
-        db.session.commit()
+        post_to_create.save()
 
         return jsonify({
             "message": f"Post {body.title} created",
@@ -58,7 +57,15 @@ def get_all_posts(body: PostsBaseModel):
     if all_posts:
         return {
             "subreddit": subreddit.name,
-            "Posts": [{"title": post.title, "text": post.text} for post in all_posts]
+            "Posts": [
+                {
+                    "title": post.title,
+                    "text": post.text,
+                    "votes": post.votes,
+                    "created": post.created_on,
+                    "created_by": post.created_by
+                } for post in all_posts
+            ]
         }, HTTPStatus.OK
 
     return {
@@ -74,6 +81,7 @@ def get_post_by_id(post_id: int):
         return jsonify(
             post=post.title,
             text=post.text,
+            votes=post.votes,
             created_on=post.created_on,
             created_by=post.created_by
         ), HTTPStatus.OK
@@ -84,15 +92,14 @@ def get_post_by_id(post_id: int):
 
 
 @posts.route("/get/post/<post_id>/upvote", methods=["GET"])
-@login_required
+@jwt_required(fresh=True)
 def upvote_a_post(post_id: int):
     post = Post.get_by_id(post_id)
 
     if post and current_user:
-        post.votes += 1
+        post.update(votes=post.votes+1)
 
-        db.session.add(post)
-        db.session.commit()
+        post.save()
 
         return {
             "message": "Up-voted Successfully"
@@ -100,19 +107,18 @@ def upvote_a_post(post_id: int):
 
     return {
         "message": "The post you selected does not exist"
-    }, HTTPStatus.NOT_ACCEPTABLE
+    }, HTTPStatus.NOT_FOUND
 
 
 @posts.route("/get/post/<post_id>/downvote", methods=["GET"])
-@login_required
+@jwt_required(fresh=True)
 def downvote_a_post(post_id: int):
     post = Post.get_by_id(post_id)
 
     if post and current_user:
-        post.votes -= 1
+        post.update(votes=post.votes-1)
 
-        db.session.add(post)
-        db.session.commit()
+        post.save()
 
         return {
             "message": "Down-voted Successfully"
@@ -120,4 +126,4 @@ def downvote_a_post(post_id: int):
 
     return {
         "message": "The post you selected does not exist"
-    }, HTTPStatus.NOT_ACCEPTABLE
+    }, HTTPStatus.NOT_FOUND

@@ -1,7 +1,8 @@
 import pendulum
 from sqlalchemy_serializer import SerializerMixin
 
-from ..database import db, CRUDMixin
+from . import CRUDMixin
+from ..database import db
 
 
 class Comments(db.Model, CRUDMixin, SerializerMixin):

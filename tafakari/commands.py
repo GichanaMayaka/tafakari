@@ -1,12 +1,11 @@
 import click
 from faker import Faker
-from sqlalchemy import create_engine
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
 from sqlalchemy.engine.mock import MockConnection
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from .database import db, SQLALCHEMY_DATABASE_URI, TEST_DATABASE_URI
-from .models.posts import Post
+from .database import db, SQLALCHEMY_DATABASE_URI
 from .models.users import User
 
 
@@ -22,10 +21,6 @@ def create_db(uri: str = SQLALCHEMY_DATABASE_URI) -> None:
 
     if not database_exists(engine.url):
         create_database(engine.url)
-
-
-def create_test_db() -> None:
-    create_db(uri=TEST_DATABASE_URI)
 
 
 def create_tables(database: SQLAlchemy = db) -> None:
