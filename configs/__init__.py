@@ -1,3 +1,4 @@
+import datetime
 import secrets
 from typing import Final, Any
 
@@ -10,9 +11,15 @@ class AppConfig(BaseModel):
     POSTGRES_PASSWORD: Final[str] = "password"
     POSTGRES_DATABASE_NAME: Final[str] = "tafakari"
     POSTGRES_PORT: Final[int] = 5433
+    
     SESSION_TYPE: Final[str] = "redis"
+    
     SECRET_KEY: Final[str] = secrets.token_hex()
     JWT_ALGORITHM: Final[str] = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRES: Final[datetime.timedelta] = datetime.timedelta(minutes=30)
+    
+    REDIS_HOSTNAME: Final[str] = "localhost"
+    REDIS_PORT: Final[int] = 6379
 
 
 class GlobalConfig(BaseSettings):
@@ -25,6 +32,7 @@ class GlobalConfig(BaseSettings):
 
 class DevConfig(GlobalConfig):
     """Development configurations."""
+    DEBUG: Final[bool] = True
 
     class Config:
         env_prefix: str = "DEV_"
@@ -38,7 +46,7 @@ class ProdConfig(GlobalConfig):
 
 
 class TestConfig(GlobalConfig):
-    TESTING: Final[str] = "True"
+    TESTING: Final[bool] = True
 
 
 class FactoryConfig:
@@ -51,10 +59,10 @@ class FactoryConfig:
         if self.env_state == "dev":
             return DevConfig()
 
-        elif self.env_state == "prod":
+        if self.env_state == "prod":
             return ProdConfig()
 
-        elif self.env_state == "test":
+        if self.env_state == "test":
             return TestConfig()
 
 
