@@ -45,6 +45,13 @@ def check_if_token_is_revoked(jwt_header: dict, jwt_payload: dict) -> bool:
     return token_in_redis is not None
 
 
+@jwt.additional_claims_loader
+def add_additional_claims(identity):
+    return dict(
+        exp=pendulum.now() + configs.APP_CONFIG.JWT_ACCESS_TOKEN_EXPIRES
+    )
+
+
 @authentications.route("/login", methods=["POST"])
 @validate(body=UserRequestSchema)
 def login(body: UserRequestSchema):
@@ -56,8 +63,10 @@ def login(body: UserRequestSchema):
     ).first()
 
     if user and check_password(user.password, body.password):
-        token = create_access_token(identity=user.username, fresh=True, additional_claims={
-                                    "exp": pendulum.now() + configs.APP_CONFIG.JWT_ACCESS_TOKEN_EXPIRES})
+        token = create_access_token(
+            identity=user.username,
+            fresh=True
+        )
         return jsonify(access_token=token), HTTPStatus.ACCEPTED
 
     if not user:

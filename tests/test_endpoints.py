@@ -14,7 +14,14 @@ from ..tafakari.models import *
 from ..tafakari.views.schemas import CreateSubredditPostSchema
 
 engine = create_engine(
-    test_database_uri
+    test_database_uri,
+    pool_pre_ping=True,
+    connect_args={
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5,
+    }
 )
 
 
@@ -30,33 +37,46 @@ def app(create_test_database) -> Flask:
 
 
 @pytest.fixture()
-def test_client(app) -> FlaskClient:
+def test_client_app(app) -> FlaskClient:
     with app.app_context():
         db.metadata.create_all(bind=engine)
         yield app
         drop_database(engine.url)
 
 
-@pytest.fixture()
-def authorised_user(test_client):
-    test_client.test_client_class = FlaskLoginClient
-    yield test_client
-    # db.session.add(u)
+@pytest.fixture(autouse=True)
+def login_client(test_client_app):
+    test_client_app.test_client_class = FlaskLoginClient
+    yield test_client_app
 
 
-def test_create_subreddit(authorised_user) -> None:
+def test_create_subreddit_valid(login_client) -> None:
     u = users.User.create(
         username="tester",
         email="tester@email.com",
         password="password"
     )
-    with authorised_user.test_client(user=u) as client:
-        response = client.post(
+    with login_client.test_client(user=u) as test_client:
+        response = test_client.post(
             "/create/subreddit",
             json=CreateSubredditPostSchema(
                 name="test",
                 description="test"
             ).dict()
         )
-        assert response.content_type == "application/json"
-        assert response.status_code == HTTPStatus.OK
+    assert response.content_type == "application/json"
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_create_subreddit_unauthorised(login_client) -> None:
+    with login_client.test_client() as test_client:
+        response = test_client.post(
+            "/create/subreddit",
+            json=CreateSubredditPostSchema(
+                name="test",
+                description="test"
+            ).dict()
+        )
+
+    assert response.content_type == "application/json"
+    assert response.status_code == HTTPStatus.UNAUTHORIZED

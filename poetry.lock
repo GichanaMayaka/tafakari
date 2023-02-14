@@ -142,18 +142,6 @@ Werkzeug = ">=0.14"
 asymmetric-crypto = ["cryptography (>=3.3.1)"]
 
 [[package]]
-name = "flask-login"
-version = "0.6.2"
-description = "User authentication and session management for Flask."
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-Flask = ">=1.0.4"
-Werkzeug = ">=1.0.1"
-
-[[package]]
 name = "flask-pydantic"
 version = "0.11.0"
 description = "Flask extension for integration with Pydantic library"
@@ -444,17 +432,6 @@ pymysql = ["pymysql", "pymysql (<1)"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
-name = "sqlalchemy-serializer"
-version = "1.4.1"
-description = "Mixin for SQLAlchemy-models serialization without pain"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-SQLAlchemy = "*"
-
-[[package]]
 name = "sqlalchemy-utils"
 version = "0.38.3"
 description = "Various utility functions for SQLAlchemy."
@@ -512,7 +489,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4998147f5c3ee9c3553009cb26df6ca3b5b942b9bd17a2cdd0519b3061fb133b"
+content-hash = "cd49939485e373d19b8934861a104f4ed67b12b56e48729a82c5bda263258139"
 
 [metadata.files]
 async-timeout = [
@@ -629,10 +606,6 @@ flask-bcrypt = [
 flask-jwt-extended = [
     {file = "Flask-JWT-Extended-4.4.4.tar.gz", hash = "sha256:62b521d75494c290a646ae8acc77123721e4364790f1e64af0038d823961fbf0"},
     {file = "Flask_JWT_Extended-4.4.4-py2.py3-none-any.whl", hash = "sha256:a85eebfa17c339a7260c4643475af444784ba6de5588adda67406f0a75599553"},
-]
-flask-login = [
-    {file = "Flask-Login-0.6.2.tar.gz", hash = "sha256:c0a7baa9fdc448cdd3dd6f0939df72eec5177b2f7abe6cb82fc934d29caac9c3"},
-    {file = "Flask_Login-0.6.2-py3-none-any.whl", hash = "sha256:1ef79843f5eddd0f143c2cd994c1b05ac83c0401dc6234c143495af9a939613f"},
 ]
 flask-pydantic = [
     {file = "Flask-Pydantic-0.11.0.tar.gz", hash = "sha256:eef679b24e34ffb02e24e1d998ac023007aa2b531927fdc2f9b8114a12c19bb4"},
@@ -924,9 +897,6 @@ sqlalchemy = [
     {file = "SQLAlchemy-1.4.44-cp39-cp39-win32.whl", hash = "sha256:7cf7c7adbf4417e3f46fc5a2dbf8395a5a69698217337086888f79700a12e93a"},
     {file = "SQLAlchemy-1.4.44-cp39-cp39-win_amd64.whl", hash = "sha256:d3b6d4588994da73567bb00af9d7224a16c8027865a8aab53ae9be83f9b7cbd1"},
     {file = "SQLAlchemy-1.4.44.tar.gz", hash = "sha256:2dda5f96719ae89b3ec0f1b79698d86eb9aecb1d54e990abb3fdd92c04b46a90"},
-]
-sqlalchemy-serializer = [
-    {file = "SQLAlchemy-serializer-1.4.1.tar.gz", hash = "sha256:c4cf3e3eebbffa5b46a77ddb886230e5d8c17fd0b9ddbd57eed1a837eb1463cc"},
 ]
 sqlalchemy-utils = [
     {file = "SQLAlchemy-Utils-0.38.3.tar.gz", hash = "sha256:9f9afba607a40455cf703adfa9846584bf26168a0c5a60a70063b70d65051f4d"},

@@ -1,12 +1,13 @@
 from http import HTTPStatus
 
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
+from ..models.comments import Comments
+from ..models.posts import Post
 from .schemas import CommentRequestSchema
-from .. import Post, Comments
 
 comments = Blueprint(
     "comments",

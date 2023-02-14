@@ -1,11 +1,10 @@
 import pendulum
-from sqlalchemy_serializer import SerializerMixin
 
 from . import CRUDMixin
 from ..database import db
 
 
-class Post(db.Model, CRUDMixin, SerializerMixin):
+class Post(db.Model, CRUDMixin):
     __tablename__ = "post"
     title = db.Column(db.String(200), nullable=False, unique=False)
     text = db.Column(db.String(1000), nullable=True, unique=False)

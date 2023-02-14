@@ -1,22 +1,19 @@
 import uuid
 
 import pendulum
-from sqlalchemy_serializer import SerializerMixin
 
-from . import CRUDMixin
-from .usersubreddit import user_subreddit_junction_table
 from ..database import db
 from ..extensions import bcrypt
+from . import CRUDMixin
+from .usersubreddit import user_subreddit_junction_table
 
 
-class User(db.Model, CRUDMixin, SerializerMixin):
+class User(db.Model, CRUDMixin):
     """
         Represents a user
     """
-    # TODO: Add karma functionality
     __tablename__ = "user"
-    serialize_rules = ('comments.comment', 'post.title', 'subreddits.description',)
-    
+
     external_id = db.Column(
         db.String,
         nullable=False,
@@ -65,5 +62,5 @@ def hash_password(password: str) -> bytes:
     return bcrypt.generate_password_hash(password).decode("utf-8")
 
 
-def check_password(hashed_pwd, pwd) -> bool:
+def check_password(hashed_pwd: str, pwd: str) -> bool:
     return bcrypt.check_password_hash(hashed_pwd, pwd)

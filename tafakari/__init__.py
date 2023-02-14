@@ -1,18 +1,14 @@
 from flask import Flask
 
-from .commands import (create_tables, drop_tables, recreate_db, seed,
-                       seed_users, create_db, drop_db)
+from .commands import (create_db, create_tables, drop_db, drop_tables,
+                       recreate_db, seed, seed_users)
 from .database import SQLALCHEMY_DATABASE_URI, db
-from .extensions import bcrypt, sess, login_manager, jwt
-from .models.comments import Comments
-from .models.posts import Post
-from .models.subreddit import Subreddit
-from .models.users import User
+from .extensions import bcrypt, jwt, sess
 from .views.authentication import authentications
+from .views.comments import comments
 from .views.posts import posts
 from .views.subreddits import subreddits
 from .views.users import user
-from .views.comments import comments
 from ..configs import configs
 
 
@@ -42,7 +38,6 @@ def register_extensions(app: Flask) -> None:
     db.init_app(app=app)
     bcrypt.init_app(app=app)
     sess.init_app(app=app)
-    login_manager.init_app(app=app)
     jwt.init_app(app=app)
 
 

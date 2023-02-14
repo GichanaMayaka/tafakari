@@ -5,10 +5,9 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 
-from .schemas import PostsRequestSchema, PostsBaseModel
-from ..database import db
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
+from .schemas import PostsBaseModel, PostsRequestSchema
 
 posts = Blueprint("post", __name__, template_folder="templates")
 
