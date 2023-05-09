@@ -47,13 +47,13 @@ def test_user(user) -> None:
 
 
 def test_subreddits(subreddit) -> None:
-    assert subreddit.name is "The Pre-Raphaelite Brotherhood"
-    assert subreddit.description is "Art Movements"
+    assert subreddit.name == "The Pre-Raphaelite Brotherhood"
+    assert subreddit.description == "Art Movements"
 
 
 def test_post(post) -> None:
-    assert post.title is "Ophelia"
-    assert post.text is "Painting by John Everett Millais"
+    assert post.title == "Ophelia"
+    assert post.text == "Painting by John Everett Millais"
 
     post.votes = 10
 

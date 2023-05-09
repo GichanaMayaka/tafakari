@@ -2,13 +2,15 @@ from http import HTTPStatus
 
 import pendulum
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from .schemas import CreateSubredditPostSchema, UserRequestSchema
+from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from .schemas import (CreateSubredditPostSchema, SubredditViewSchema,
+                      UserRequestSchema)
 
 subreddits = Blueprint("subreddit", __name__, template_folder="templates")
 
@@ -26,6 +28,7 @@ def create_subreddit(body: CreateSubredditPostSchema):
             created_by=current_user.id
         )
 
+        new_subreddit.users.append(current_user)
         new_subreddit.save()
 
         return jsonify(message="created"), HTTPStatus.OK
@@ -49,19 +52,25 @@ def get_all_subreddits():
 
 @subreddits.route("/get/subreddit/<subreddit_id>", methods=["GET"])
 def get_subreddit_by_id(subreddit_id: int):
-    subreddit = Subreddit.get_by_id(subreddit_id)
+    subreddit = Subreddit.query.filter(Subreddit.id == subreddit_id).join(
+        Post, Subreddit.id == Post.belongs_to, isouter=True
+    ).add_columns(
+        Subreddit.name,
+        Subreddit.created_on,
+        Subreddit.created_by,
+        Subreddit.description,
+        Post.title,
+        Post.text,
+        Post.votes
+    ).first()
 
     if subreddit:
-        user = User.get_by_id(subreddit.created_by)
-
-        return {
-            "subreddit": {
-                "name": subreddit.name,
-                "description": subreddit.description,
-                "created_by": user.username,
-                "created_on": subreddit.created_on
-            }
-        }, HTTPStatus.OK
+        return SubredditViewSchema.from_orm(
+            subreddit
+        ).dict(
+            exclude_unset=True,
+            exclude_none=True
+        ), HTTPStatus.OK
 
     return {
         "message": "No Subreddit Found"
@@ -90,12 +99,14 @@ def join_a_subreddit(subreddit_id: int):
 
 @subreddits.route("/delete/subreddit/<subreddit_id>", methods=["DELETE"])
 @validate(body=UserRequestSchema)
+@jwt_required(fresh=True)
 def delete_a_subreddit(subreddit_id: int, body: UserRequestSchema):
     creator_id = User.query.filter_by(username=body.username).first()
 
     if creator_id:
         subreddit_creator = Subreddit.query.filter(
-            and_(Subreddit.id == subreddit_id, Subreddit.created_by == creator_id.id)
+            and_(Subreddit.id == subreddit_id,
+                 Subreddit.created_by == creator_id.id)
         ).first()
         if subreddit_creator:
             subreddit_creator.delete()

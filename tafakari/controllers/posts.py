@@ -5,18 +5,18 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 
+from .schemas import PostsRequestSchema
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
-from .schemas import PostsBaseModel, PostsRequestSchema
 
 posts = Blueprint("post", __name__, template_folder="templates")
 
 
-@posts.route("/create/post", methods=["POST"])
+@posts.route("/get/subreddit/<subreddit_id>/create/post", methods=["POST"])
 @validate(body=PostsRequestSchema)
 @jwt_required(fresh=True)
-def create_subreddit_post(body: PostsRequestSchema):
-    subreddit = Subreddit.get_by_id(body.metadata.subreddit_id)
+def create_subreddit_post(body: PostsRequestSchema, subreddit_id: int):
+    subreddit = Subreddit.get_by_id(subreddit_id)
 
     if current_user and subreddit:
         post_to_create = Post.create(
@@ -47,11 +47,10 @@ def create_subreddit_post(body: PostsRequestSchema):
     }, HTTPStatus.EXPECTATION_FAILED
 
 
-@posts.route("/get/posts", methods=["POST"])
-@validate(body=PostsBaseModel)
-def get_all_posts(body: PostsBaseModel):
-    all_posts = Post.query.filter_by(belongs_to=body.subreddit_id).all()
-    subreddit = Subreddit.get_by_id(body.subreddit_id)
+@posts.route("/get/subreddit/<subreddit_id>/get/post", methods=["POST"])
+def get_all_posts(subreddit_id: int):
+    all_posts = Post.query.filter_by(belongs_to=subreddit_id).all()
+    subreddit = Subreddit.get_by_id(subreddit_id)
 
     if all_posts:
         return {
@@ -96,7 +95,7 @@ def upvote_a_post(post_id: int):
     post = Post.get_by_id(post_id)
 
     if post and current_user:
-        post.update(votes=post.votes+1)
+        post.update(votes=post.votes + 1)
 
         post.save()
 
@@ -115,7 +114,7 @@ def downvote_a_post(post_id: int):
     post = Post.get_by_id(post_id)
 
     if post and current_user:
-        post.update(votes=post.votes-1)
+        post.update(votes=post.votes - 1)
 
         post.save()
 

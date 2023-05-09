@@ -4,11 +4,11 @@ from .commands import (create_db, create_tables, drop_db, drop_tables,
                        recreate_db, seed, seed_users)
 from .database import SQLALCHEMY_DATABASE_URI, db
 from .extensions import bcrypt, jwt, sess
-from .views.authentication import authentications
-from .views.comments import comments
-from .views.posts import posts
-from .views.subreddits import subreddits
-from .views.users import user
+from .controllers.authentication import authentications
+from .controllers.comments import comments
+from .controllers.posts import posts
+from .controllers.subreddits import subreddits
+from .controllers.users import user
 from ..configs import configs
 
 
@@ -30,6 +30,13 @@ def create_app(database_uri: str = SQLALCHEMY_DATABASE_URI, configurations: obje
         return {
             "message": "Welcome to tafakari",
         }, 200
+
+    @app.after_request
+    def set_headers(response):
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allowed-Methods"] = "GET, POST"
+        response.headers["Content-Type"] = "application/json"
+        return response
 
     return app
 

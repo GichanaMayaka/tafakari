@@ -53,7 +53,7 @@ class FactoryConfig:
     """Returns a config instance depending on the ENV_STATE variable."""
 
     def __init__(self, env_state: str):
-        self.env_state = env_state
+        self.env_state = env_state.lower()
 
     def __call__(self):
         if self.env_state == "dev":

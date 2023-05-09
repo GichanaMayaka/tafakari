@@ -25,7 +25,6 @@ def get_profile():
         ).first()
 
         if user_profile:
-            print(user_profile.post)
             return UserProfileViewSchema.from_orm(
                 user_profile
             ).dict(

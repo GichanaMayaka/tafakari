@@ -11,7 +11,7 @@ from sqlalchemy import and_
 from ...configs import configs
 from ..extensions import jwt
 from ..models.users import User, check_password
-from .schemas import UserRequestSchema
+from .schemas import UserRequestSchema, UserProfileViewSchema
 
 authentications = Blueprint(
     "authentication",
@@ -77,7 +77,7 @@ def login(body: UserRequestSchema):
 
 
 @authentications.route("/logout", methods=["DELETE"])
-@jwt_required()
+@jwt_required(fresh=True)
 def logout():
     jti = get_jwt()["jti"]
     jwt_redis_blocklist.set(
@@ -104,9 +104,9 @@ def register(body: UserRequestSchema):
                                is_admin=body.is_admin)
         new_user.save()
 
-        return jsonify(user=new_user.to_dict()), HTTPStatus.CREATED
+        return UserProfileViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
 
     new_user = User.create(username=body.username,
                            email=body.email, password=body.password)
     new_user.save()
-    return jsonify(user=new_user.to_dict()), HTTPStatus.CREATED
+    return UserProfileViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED

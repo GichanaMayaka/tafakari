@@ -28,7 +28,6 @@ class PostsBaseModel(BaseTafakariSchema):
 
 
 class PostsRequestSchema(BaseTafakariSchema):
-    metadata: PostsBaseModel
     title: str
     text: str
 
@@ -51,8 +50,11 @@ class PostResponseSchema(BaseTafakariSchema):
 
 
 class SubredditResponseSchema(BaseTafakariSchema):
+    id: int
     name: str
     description: str
+    created_by: str
+    created_on: datetime.datetime
 
 
 class UserProfileViewSchema(BaseTafakariSchema):
@@ -62,3 +64,10 @@ class UserProfileViewSchema(BaseTafakariSchema):
     email: str
     subreddits: Optional[list[SubredditResponseSchema]]
     post: Optional[list[PostResponseSchema]]
+
+
+class SubredditViewSchema(BaseTafakariSchema):
+    name: str
+    description: str
+    created_by: str
+    created_on: datetime.datetime
