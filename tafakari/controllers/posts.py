@@ -71,7 +71,7 @@ def get_all_posts(subreddit_id: int):
     }, HTTPStatus.NOT_FOUND
 
 
-@posts.route("/get/posts/<post_id>", methods=["GET"])
+@posts.route("/get/post/<post_id>", methods=["GET"])
 def get_post_by_id(post_id: int):
     post = Post.get_by_id(post_id)
 

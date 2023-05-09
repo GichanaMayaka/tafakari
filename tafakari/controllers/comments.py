@@ -5,33 +5,30 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
+from .schemas import CommentRequestSchema
 from ..models.comments import Comments
 from ..models.posts import Post
-from .schemas import CommentRequestSchema
 
-comments = Blueprint(
-    "comments",
-    __name__
-)
+comments = Blueprint("comments", __name__)
 
 
-@comments.route("/get/posts/<post_id>/create/comment", methods=["GET", "POST"])
+@comments.route("/get/post/<post_id>/create/comment", methods=["POST"])
 @validate(body=CommentRequestSchema)
 @jwt_required(fresh=True)
 def add_comment(body: CommentRequestSchema, post_id: int):
     post: Post = Post.get_by_id(post_id)
 
     if post and current_user:
-        c: Comments = Comments.create(
+        comment: Comments = Comments.create(
             comment=body.comment,
             user_id=current_user.id,
             post_id=post_id
         )
-        c.save()
+        comment.save()
         return jsonify(
-            message=c.comment,
-            creator=c.user_id,
-            created_on=c.created_on
+            message=comment.comment,
+            creator=comment.user_id,
+            created_on=comment.created_on
         ), HTTPStatus.CREATED
 
     if not post:
@@ -44,7 +41,7 @@ def add_comment(body: CommentRequestSchema, post_id: int):
     ), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/posts/<post_id>/delete/comment/<comment_id>", methods=["DELETE"])
+@comments.route("/get/post/<post_id>/delete/comment/<comment_id>", methods=["DELETE"])
 @jwt_required(fresh=True)
 def delete_a_comment(post_id: int, comment_id: int):
     post: Post = Post.get_by_id(post_id)
@@ -66,9 +63,57 @@ def delete_a_comment(post_id: int, comment_id: int):
 
         elif not comment:
             return jsonify(
-                message="No such comment"
+                message="Cannot delete comment."
             ), HTTPStatus.NOT_FOUND
 
     return jsonify(
         message="No such post exists"
     ), HTTPStatus.NOT_FOUND
+
+
+@comments.route("/get/post/<post_id>/upvote/comment/<comment_id>", methods=["GET"])
+@jwt_required(fresh=True)
+def upvote_a_post_comment(post_id: int, comment_id: int):
+    comment = Comments.query.filter(
+        and_(
+            Comments.post_id == post_id,
+            Comments.id == comment_id
+        )
+    ).first()
+
+    if comment and current_user:
+        comment.update(votes=comment.votes + 1)
+
+        comment.save()
+
+        return {
+            "message": "Up-voted Successfully"
+        }, HTTPStatus.ACCEPTED
+
+    return {
+        "message": "The comment you selected does not exist"
+    }, HTTPStatus.NOT_FOUND
+
+
+@comments.route("/get/post/<post_id>/downvote/comment/<comment_id>", methods=["GET"])
+@jwt_required(fresh=True)
+def downvote_a_post_comment(post_id: int, comment_id: int):
+    comment = Comments.query.filter(
+        and_(
+            Comments.post_id == post_id,
+            Comments.id == comment_id
+        )
+    ).first()
+
+    if comment and current_user:
+        comment.update(votes=comment.votes - 1)
+
+        comment.save()
+
+        return {
+            "message": "Down-voted Successfully"
+        }, HTTPStatus.ACCEPTED
+
+    return {
+        "message": "The comment you selected does not exist"
+    }, HTTPStatus.NOT_FOUND
