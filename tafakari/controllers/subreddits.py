@@ -6,11 +6,11 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
+from .schemas import (CreateSubredditPostSchema, SubredditViewSchema,
+                      UserRequestSchema)
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from .schemas import (CreateSubredditPostSchema, SubredditViewSchema,
-                      UserRequestSchema)
 
 subreddits = Blueprint("subreddit", __name__, template_folder="templates")
 

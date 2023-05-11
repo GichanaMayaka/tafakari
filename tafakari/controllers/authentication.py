@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, Any
 
 import pendulum
 import redis
@@ -8,10 +8,10 @@ from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from ...configs import configs
+from .schemas import UserRequestSchema, UserProfileViewSchema
 from ..extensions import jwt
 from ..models.users import User, check_password
-from .schemas import UserRequestSchema, UserProfileViewSchema
+from ...configs import configs
 
 authentications = Blueprint(
     "authentication",
@@ -46,7 +46,7 @@ def check_if_token_is_revoked(jwt_header: dict, jwt_payload: dict) -> bool:
 
 
 @jwt.additional_claims_loader
-def add_additional_claims(identity):
+def add_additional_claims(identity: Any):
     return dict(
         exp=pendulum.now() + configs.APP_CONFIG.JWT_ACCESS_TOKEN_EXPIRES
     )

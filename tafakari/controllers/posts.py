@@ -48,7 +48,7 @@ def create_subreddit_post(body: PostsRequestSchema, subreddit_id: int):
 
 
 @posts.route("/get/subreddit/<subreddit_id>/get/post", methods=["POST"])
-def get_all_posts(subreddit_id: int):
+def get_all_posts_in_subreddit(subreddit_id: int):
     all_posts = Post.query.filter_by(belongs_to=subreddit_id).all()
     subreddit = Subreddit.get_by_id(subreddit_id)
 

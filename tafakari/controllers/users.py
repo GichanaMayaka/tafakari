@@ -4,9 +4,9 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import and_
 
+from .schemas import UserProfileViewSchema
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from .schemas import UserProfileViewSchema
 
 user = Blueprint("user", __name__)
 
