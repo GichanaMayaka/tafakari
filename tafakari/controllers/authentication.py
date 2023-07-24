@@ -20,8 +20,8 @@ authentications = Blueprint(
 )
 
 jwt_redis_blocklist: redis.Redis = redis.StrictRedis(
-    host=configs.APP_CONFIG.REDIS_HOSTNAME,
-    port=configs.APP_CONFIG.REDIS_PORT,
+    host=configs.REDIS_HOSTNAME,
+    port=configs.REDIS_PORT,
     db=0,
     decode_responses=True
 )
@@ -48,7 +48,7 @@ def check_if_token_is_revoked(jwt_header: dict, jwt_payload: dict) -> bool:
 @jwt.additional_claims_loader
 def add_additional_claims(identity: Any):
     return dict(
-        exp=pendulum.now() + configs.APP_CONFIG.JWT_ACCESS_TOKEN_EXPIRES
+        exp=pendulum.now() + configs.JWT_ACCESS_TOKEN_EXPIRES
     )
 
 

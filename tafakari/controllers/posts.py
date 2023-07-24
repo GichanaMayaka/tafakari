@@ -4,8 +4,9 @@ import pendulum
 from flask import Blueprint, jsonify
 from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
+from sqlalchemy import and_
 
-from .schemas import PostsRequestSchema
+from .schemas import PostsRequestSchema, AllPostsInSubredditSchema
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 
@@ -42,38 +43,28 @@ def create_subreddit_post(body: PostsRequestSchema, subreddit_id: int):
         return {
             "message": "Cannot create a post to a non-existent subreddit."
         }, HTTPStatus.NOT_FOUND
+
     return {
         "message": "Fatal Failure"
     }, HTTPStatus.EXPECTATION_FAILED
 
 
-@posts.route("/get/subreddit/<subreddit_id>/get/post", methods=["POST"])
+@posts.route("/get/subreddit/<subreddit_id>/get/post", methods=["GET"])
 def get_all_posts_in_subreddit(subreddit_id: int):
     all_posts = Post.query.filter_by(belongs_to=subreddit_id).all()
     subreddit = Subreddit.get_by_id(subreddit_id)
 
     if all_posts:
-        return {
-            "subreddit": subreddit.name,
-            "Posts": [
-                {
-                    "title": post.title,
-                    "text": post.text,
-                    "votes": post.votes,
-                    "created": post.created_on,
-                    "created_by": post.created_by
-                } for post in all_posts
-            ]
-        }, HTTPStatus.OK
+        return AllPostsInSubredditSchema(subreddit=subreddit.name, posts=all_posts).dict(), HTTPStatus.OK
 
     return {
         "message": "No posts yet"
     }, HTTPStatus.NOT_FOUND
 
 
-@posts.route("/get/post/<post_id>", methods=["GET"])
-def get_post_by_id(post_id: int):
-    post = Post.get_by_id(post_id)
+@posts.route("/get/subreddit/<subreddit_id>/get/post/<post_id>", methods=["GET"])
+def get_post_by_id(subreddit_id: int, post_id: int):
+    post = Post.query.filter(and_(Post.belongs_to == subreddit_id, Post.id == post_id)).first()
 
     if post:
         return jsonify(
@@ -89,10 +80,11 @@ def get_post_by_id(post_id: int):
     ), HTTPStatus.NOT_FOUND
 
 
-@posts.route("/get/post/<post_id>/upvote", methods=["GET"])
+@posts.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/upvote", methods=["GET"])
 @jwt_required(fresh=True)
-def upvote_a_post(post_id: int):
-    post = Post.get_by_id(post_id)
+def upvote_a_post(subreddit_id: int, post_id: int):
+    # TODO: Make upvotes/downvotes unique per user
+    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
 
     if post and current_user:
         post.update(votes=post.votes + 1)
@@ -108,9 +100,9 @@ def upvote_a_post(post_id: int):
     }, HTTPStatus.NOT_FOUND
 
 
-@posts.route("/get/post/<post_id>/downvote", methods=["GET"])
+@posts.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/downvote", methods=["GET"])
 @jwt_required(fresh=True)
-def downvote_a_post(post_id: int):
+def downvote_a_post(subreddit_id: int, post_id: int):
     post = Post.get_by_id(post_id)
 
     if post and current_user:

@@ -5,6 +5,7 @@ from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import and_
 
 from .schemas import UserProfileViewSchema
+from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
 
@@ -22,15 +23,18 @@ def get_profile():
             )
         ).join(
             Subreddit, User.id == Subreddit.created_by, isouter=True
+        ).join(
+            Post, User.id == Post.created_by, isouter=True
         ).first()
 
         if user_profile:
+            print(user_profile)
             return UserProfileViewSchema.from_orm(
                 user_profile
             ).dict(
                 exclude_none=True,
                 exclude_unset=True
-            ), HTTPStatus.ACCEPTED
+            ), HTTPStatus.OK
 
     return jsonify(
         message="User not Found"

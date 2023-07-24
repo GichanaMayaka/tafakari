@@ -2,17 +2,17 @@ from flask import Flask
 
 from .commands import (create_db, create_tables, drop_db, drop_tables,
                        recreate_db, seed, seed_users)
-from .database import SQLALCHEMY_DATABASE_URI, db
-from .extensions import bcrypt, jwt, sess
 from .controllers.authentication import authentications
 from .controllers.comments import comments
 from .controllers.posts import posts
 from .controllers.subreddits import subreddits
 from .controllers.users import user
+from .database import SQLALCHEMY_DATABASE_URI, db
+from .extensions import bcrypt, jwt, sess
 from ..configs import configs
 
 
-def create_app(database_uri: str = SQLALCHEMY_DATABASE_URI, configurations: object = configs.APP_CONFIG,
+def create_app(database_uri: str = SQLALCHEMY_DATABASE_URI, configurations: object = configs,
                additional_binds: dict = None) -> Flask:
     app = Flask(__name__)
     app.config.from_object(configurations)

@@ -1,69 +1,56 @@
 import datetime
-import secrets
-from typing import Final, Any
+import os
+from typing import Final
 
-from pydantic import BaseSettings, BaseModel, Field
-
-
-class AppConfig(BaseModel):
-    POSTGRES_HOSTNAME: Final[str] = "localhost"
-    POSTGRES_USERNAME: Final[str] = "postgres"
-    POSTGRES_PASSWORD: Final[str] = "password"
-    POSTGRES_DATABASE_NAME: Final[str] = "tafakari"
-    POSTGRES_PORT: Final[int] = 5433
-    
-    SESSION_TYPE: Final[str] = "redis"
-    
-    SECRET_KEY: Final[str] = secrets.token_hex()
-    JWT_ALGORITHM: Final[str] = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRES: Final[datetime.timedelta] = datetime.timedelta(minutes=30)
-    
-    REDIS_HOSTNAME: Final[str] = "localhost"
-    REDIS_PORT: Final[int] = 6379
+from pydantic import BaseSettings, PostgresDsn
 
 
-class GlobalConfig(BaseSettings):
-    APP_CONFIG: AppConfig = AppConfig()
-    ENV_STATE: str = Field(None, env="ENV_STATE")
-
-    class Config:
-        env_file: str = ".env"
-
-
-class DevConfig(GlobalConfig):
+class DevConfig(BaseSettings):
     """Development configurations."""
-    DEBUG: Final[bool] = True
+    POSTGRES_DSN: PostgresDsn
+
+    SESSION_TYPE: str
+
+    SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRES: Final[datetime.timedelta] = datetime.timedelta(minutes=30)
+
+    REDIS_HOSTNAME: str
+    REDIS_PORT: int
+    DEBUG: bool = True
 
     class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
         env_prefix: str = "DEV_"
 
 
-class ProdConfig(GlobalConfig):
+class ProdConfig(DevConfig):
     """Production configurations."""
 
     class Config:
         env_prefix: str = "PROD_"
 
 
-class TestConfig(GlobalConfig):
+class TestConfig(DevConfig):
     TESTING: Final[bool] = True
 
 
-class FactoryConfig:
-    """Returns a config instance depending on the ENV_STATE variable."""
+def factory():
+    env: str = os.environ.get("ENV", "dev")
 
-    def __init__(self, env_state: str):
-        self.env_state = env_state.lower()
+    development = DevConfig()
+    testing = TestConfig()
+    production = ProdConfig()
 
-    def __call__(self):
-        if self.env_state == "dev":
-            return DevConfig()
+    env = env.lower()
 
-        if self.env_state == "prod":
-            return ProdConfig()
+    if env == "dev":
+        return development
+    elif env == "test":
+        return testing
+    elif env == "prod":
+        return production
 
-        if self.env_state == "test":
-            return TestConfig()
 
-
-configs = FactoryConfig(GlobalConfig().ENV_STATE)()
+configs = factory()

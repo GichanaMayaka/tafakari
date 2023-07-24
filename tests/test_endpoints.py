@@ -47,15 +47,15 @@ def client_app(app) -> FlaskClient:
 
 
 @pytest.fixture(autouse=True)
-def client(client_app) -> FlaskClient:
+def client_app(client_app) -> FlaskClient:
     yield client_app.test_client()
 
 
-def test_create_subreddit_valid(client: FlaskClient) -> None:
+def test_create_subreddit_valid(client_app) -> None:
     subreddit_name = "test_subreddit"
     subreddit_description = "test_subreddit_description"
 
-    with client as test_client:
+    with client_app as test_client:
         fake_user = User.create(username="test_user", email="tester@email.com", password="password")
         fake_user.save()
         fake_user_token = create_access_token(identity=fake_user.username, fresh=True)
@@ -79,8 +79,8 @@ def test_create_subreddit_valid(client: FlaskClient) -> None:
     assert test_subreddit.users[0].username == fake_user.username
 
 
-def test_create_subreddit_unauthorised(client: FlaskClient) -> None:
-    with client as test_client:
+def test_create_subreddit_unauthorised(client_app) -> None:
+    with client_app as test_client:
         response = test_client.post(
             "/create/subreddit",
             json=CreateSubredditPostSchema(

@@ -12,19 +12,19 @@ from ..models.posts import Post
 comments = Blueprint("comments", __name__)
 
 
-@comments.route("/get/post/<post_id>/create/comment", methods=["POST"])
+@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/create/comment", methods=["POST"])
 @validate(body=CommentRequestSchema)
 @jwt_required(fresh=True)
-def add_comment(body: CommentRequestSchema, post_id: int):
-    post: Post = Post.get_by_id(post_id)
+def add_comment(body: CommentRequestSchema, subreddit_id: int, post_id: int):
+    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
 
     if post and current_user:
-        comment: Comments = Comments.create(
+        comment = Comments.create(
             comment=body.comment,
             user_id=current_user.id,
             post_id=post_id
         )
-        comment.save()
+
         return jsonify(
             message=comment.comment,
             creator=comment.user_id,
@@ -41,13 +41,13 @@ def add_comment(body: CommentRequestSchema, post_id: int):
     ), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/post/<post_id>/delete/comment/<comment_id>", methods=["DELETE"])
+@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/delete/comment/<comment_id>", methods=["DELETE"])
 @jwt_required(fresh=True)
-def delete_a_comment(post_id: int, comment_id: int):
-    post: Post = Post.get_by_id(post_id)
+def delete_a_comment(subreddit_id: int, post_id: int, comment_id: int):
+    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
 
     if post and current_user:
-        comment: Comments = Comments.query.filter(
+        comment = Comments.query.filter(
             and_(
                 Comments.id == comment_id,
                 Comments.user_id == current_user.id
@@ -59,61 +59,60 @@ def delete_a_comment(post_id: int, comment_id: int):
 
             return jsonify(
                 message="Comment deleted successfully"
-            ), HTTPStatus.ACCEPTED
+            ), HTTPStatus.OK
 
         elif not comment:
             return jsonify(
                 message="Cannot delete comment."
             ), HTTPStatus.NOT_FOUND
 
-    return jsonify(
-        message="No such post exists"
-    ), HTTPStatus.NOT_FOUND
+    return jsonify(message="No such post exists"), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/post/<post_id>/upvote/comment/<comment_id>", methods=["GET"])
+@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/upvote/comment/<comment_id>", methods=["GET"])
 @jwt_required(fresh=True)
-def upvote_a_post_comment(post_id: int, comment_id: int):
-    comment = Comments.query.filter(
-        and_(
-            Comments.post_id == post_id,
-            Comments.id == comment_id
-        )
-    ).first()
+def upvote_a_post_comment(subreddit_id: int, post_id: int, comment_id: int):
+    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
 
-    if comment and current_user:
-        comment.update(votes=comment.votes + 1)
+    if post and current_user:
+        comment = Comments.query.filter(
+            and_(
+                Comments.post_id == post_id,
+                Comments.id == comment_id
+            )
+        ).first()
 
-        comment.save()
+        if comment:
+            comment.update(votes=comment.votes + 1)
 
-        return {
-            "message": "Up-voted Successfully"
-        }, HTTPStatus.ACCEPTED
+            comment.save()
 
-    return {
-        "message": "The comment you selected does not exist"
-    }, HTTPStatus.NOT_FOUND
+            return {
+                "message": "Up-voted Successfully"
+            }, HTTPStatus.ACCEPTED
+
+        return jsonify(message="The comment you selected does not exist"), HTTPStatus.NOT_FOUND
+
+    return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/post/<post_id>/downvote/comment/<comment_id>", methods=["GET"])
+@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/downvote/comment/<comment_id>", methods=["GET"])
 @jwt_required(fresh=True)
-def downvote_a_post_comment(post_id: int, comment_id: int):
-    comment = Comments.query.filter(
-        and_(
-            Comments.post_id == post_id,
-            Comments.id == comment_id
-        )
-    ).first()
+def downvote_a_post_comment(subreddit_id: int, post_id: int, comment_id: int):
+    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
 
-    if comment and current_user:
-        comment.update(votes=comment.votes - 1)
+    if post and current_user:
+        comment = Comments.query.filter(
+            and_(
+                Comments.post_id == post_id,
+                Comments.id == comment_id
+            )
+        ).first()
 
-        comment.save()
+        if comment and current_user:
+            comment.update(votes=comment.votes - 1)
+            comment.save()
 
-        return {
-            "message": "Down-voted Successfully"
-        }, HTTPStatus.ACCEPTED
+            return jsonify(message="Down-voted Successfully"), HTTPStatus.ACCEPTED
 
-    return {
-        "message": "The comment you selected does not exist"
-    }, HTTPStatus.NOT_FOUND
+    return jsonify(message="The comment you selected does not exist"), HTTPStatus.NOT_FOUND

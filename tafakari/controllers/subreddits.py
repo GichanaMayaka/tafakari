@@ -108,6 +108,7 @@ def delete_a_subreddit(subreddit_id: int, body: UserRequestSchema):
             and_(Subreddit.id == subreddit_id,
                  Subreddit.created_by == creator_id.id)
         ).first()
+
         if subreddit_creator:
             subreddit_creator.delete()
 

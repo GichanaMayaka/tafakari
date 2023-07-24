@@ -1,7 +1,8 @@
-import tafakari
 import os
 
-app = tafakari.create_app()
+from . import create_app
+
+app = create_app()
 
 if __name__ == "__main__":
     os.environ.get("ENV_STATE", "dev")

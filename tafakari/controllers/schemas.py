@@ -36,7 +36,7 @@ class CommentRequestSchema(BaseTafakariSchema):
     comment: str
 
 
-class CommentReponseSchema(BaseTafakariSchema):
+class CommentResponseSchema(BaseTafakariSchema):
     comment: str
     votes: int
     created_on: datetime.datetime
@@ -46,7 +46,7 @@ class PostResponseSchema(BaseTafakariSchema):
     title: str
     text: str
     votes: int
-    comments: Optional[list[CommentReponseSchema]]
+    comments: Optional[list[CommentResponseSchema]]
 
 
 class SubredditResponseSchema(BaseTafakariSchema):
@@ -57,6 +57,18 @@ class SubredditResponseSchema(BaseTafakariSchema):
     created_on: datetime.datetime
 
 
+class SubredditViewSchema(BaseTafakariSchema):
+    name: str
+    description: str
+    created_by: str
+    created_on: datetime.datetime
+
+
+class AllPostsInSubredditSchema(BaseTafakariSchema):
+    subreddit: str
+    posts: list[PostResponseSchema]
+
+
 class UserProfileViewSchema(BaseTafakariSchema):
     external_id: str
     username: str
@@ -64,10 +76,3 @@ class UserProfileViewSchema(BaseTafakariSchema):
     email: str
     subreddits: Optional[list[SubredditResponseSchema]]
     post: Optional[list[PostResponseSchema]]
-
-
-class SubredditViewSchema(BaseTafakariSchema):
-    name: str
-    description: str
-    created_by: str
-    created_on: datetime.datetime
