@@ -80,6 +80,7 @@ def get_subreddit_by_id(subreddit_id: int):
 @subreddits.route("/join/subreddit/<subreddit_id>", methods=["GET"])
 @jwt_required(fresh=True)
 def join_a_subreddit(subreddit_id: int):
+    # TODO: Handle joining already joined subreddit case
     subreddit = Subreddit.get_by_id(subreddit_id)
 
     if subreddit and current_user:

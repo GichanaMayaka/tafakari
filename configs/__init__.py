@@ -37,7 +37,7 @@ class TestConfig(DevConfig):
 
 
 def factory():
-    env: str = os.environ.get("ENV", "dev")
+    env = os.environ.get("ENV", "dev")
 
     development = DevConfig()
     testing = TestConfig()

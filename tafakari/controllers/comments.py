@@ -87,9 +87,7 @@ def upvote_a_post_comment(subreddit_id: int, post_id: int, comment_id: int):
 
             comment.save()
 
-            return {
-                "message": "Up-voted Successfully"
-            }, HTTPStatus.ACCEPTED
+            return jsonify(message="Up-voted Successfully"), HTTPStatus.ACCEPTED
 
         return jsonify(message="The comment you selected does not exist"), HTTPStatus.NOT_FOUND
 

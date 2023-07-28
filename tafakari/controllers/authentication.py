@@ -81,7 +81,7 @@ def login(body: UserRequestSchema):
 def logout():
     jti = get_jwt()["jti"]
     jwt_redis_blocklist.set(
-        jti, "", ex=configs.APP_CONFIG.JWT_ACCESS_TOKEN_EXPIRES
+        jti, "", ex=configs.JWT_ACCESS_TOKEN_EXPIRES
     )
     return jsonify(message="Access token revoked"), HTTPStatus.OK
 
