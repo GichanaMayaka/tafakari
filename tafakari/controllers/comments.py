@@ -12,11 +12,11 @@ from ..models.posts import Post
 comments = Blueprint("comments", __name__)
 
 
-@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/create/comment", methods=["POST"])
+@comments.route("/posts/<int:post_id>/comments", methods=["POST"])
 @validate(body=CommentRequestSchema)
 @jwt_required(fresh=True)
-def add_comment(body: CommentRequestSchema, subreddit_id: int, post_id: int):
-    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
+def add_comment(body: CommentRequestSchema, post_id: int):
+    post = Post.query.filter(Post.id == post_id).first()
 
     if post and current_user:
         comment = Comments.create(
@@ -41,10 +41,10 @@ def add_comment(body: CommentRequestSchema, subreddit_id: int, post_id: int):
     ), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/delete/comment/<comment_id>", methods=["DELETE"])
+@comments.route("/posts/<int:post_id>/comments/<int:comment_id>", methods=["DELETE"])
 @jwt_required(fresh=True)
-def delete_a_comment(subreddit_id: int, post_id: int, comment_id: int):
-    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
+def delete_a_comment(post_id: int, comment_id: int):
+    post = Post.query.filter(Post.id == post_id).first()
 
     if post and current_user:
         comment = Comments.query.filter(
@@ -69,10 +69,10 @@ def delete_a_comment(subreddit_id: int, post_id: int, comment_id: int):
     return jsonify(message="No such post exists"), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/upvote/comment/<comment_id>", methods=["GET"])
+@comments.route("/posts/<int:post_id>/comments/<int:comment_id>/upvote", methods=["GET"])
 @jwt_required(fresh=True)
-def upvote_a_post_comment(subreddit_id: int, post_id: int, comment_id: int):
-    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
+def upvote_a_post_comment(post_id: int, comment_id: int):
+    post = Post.query.filter(Post.id == post_id).first()
 
     if post and current_user:
         comment = Comments.query.filter(
@@ -94,10 +94,10 @@ def upvote_a_post_comment(subreddit_id: int, post_id: int, comment_id: int):
     return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/get/subreddit/<subreddit_id>/get/post/<post_id>/downvote/comment/<comment_id>", methods=["GET"])
+@comments.route("/posts/<int:post_id>/comments/<int:comment_id>/downvote", methods=["GET"])
 @jwt_required(fresh=True)
-def downvote_a_post_comment(subreddit_id: int, post_id: int, comment_id: int):
-    post = Post.query.filter(and_(Post.id == post_id, Post.belongs_to == subreddit_id)).first()
+def downvote_a_post_comment(post_id: int, comment_id: int):
+    post = Post.query.filter(Post.id == post_id).first()
 
     if post and current_user:
         comment = Comments.query.filter(

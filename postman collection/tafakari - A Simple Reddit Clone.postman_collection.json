@@ -487,19 +487,14 @@
               }
             },
             "url": {
-              "raw": "{{url}}/get/subreddit/1/get/post/2/create/comment",
+              "raw": "{{url}}/posts/2/comments",
               "host": [
                 "{{url}}"
               ],
               "path": [
-                "get",
-                "subreddit",
-                "1",
-                "get",
-                "post",
+                "posts",
                 "2",
-                "create",
-                "comment"
+                "comments"
               ]
             }
           },
@@ -521,20 +516,16 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{url}}/get/subreddit/1/get/post/1/upvote/comment/1",
+              "raw": "{{url}}/posts/1/comments/1/upvote",
               "host": [
                 "{{url}}"
               ],
               "path": [
-                "get",
-                "subreddit",
+                "posts",
                 "1",
-                "get",
-                "post",
+                "comments",
                 "1",
-                "upvote",
-                "comment",
-                "1"
+                "upvote"
               ]
             }
           },
@@ -556,20 +547,16 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{url}}/get/subreddit/1/get/post/1/upvote/comment/1",
+              "raw": "{{url}}/posts/1/comments/1/downvote",
               "host": [
                 "{{url}}"
               ],
               "path": [
-                "get",
-                "subreddit",
+                "posts",
                 "1",
-                "get",
-                "post",
+                "comments",
                 "1",
-                "upvote",
-                "comment",
-                "1"
+                "downvote"
               ]
             }
           },
@@ -591,17 +578,15 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{url}}/get/post/3/delete/comment/2",
+              "raw": "{{url}}/posts/1/comments/10",
               "host": [
                 "{{url}}"
               ],
               "path": [
-                "get",
-                "post",
-                "3",
-                "delete",
-                "comment",
-                "2"
+                "posts",
+                "1",
+                "comments",
+                "10"
               ]
             }
           },

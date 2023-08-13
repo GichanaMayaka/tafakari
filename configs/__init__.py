@@ -27,6 +27,7 @@ class DevConfig(BaseSettings):
 
 class ProdConfig(DevConfig):
     """Production configurations."""
+    DEBUG: Final[bool] = False
 
     class Config:
         env_prefix: str = "PROD_"

@@ -37,15 +37,19 @@ class CommentRequestSchema(BaseTafakariSchema):
 
 
 class CommentResponseSchema(BaseTafakariSchema):
+    comment_id: int
     comment: str
-    votes: int
+    comment_votes: int
     created_on: datetime.datetime
 
 
 class PostResponseSchema(BaseTafakariSchema):
+    id: int
     title: str
     text: str
     votes: int
+    username: str  # username name
+    subreddit_name: str  # Subreddit name
     comments: Optional[list[CommentResponseSchema]]
 
 
@@ -62,6 +66,10 @@ class SubredditViewSchema(BaseTafakariSchema):
     description: str
     created_by: str
     created_on: datetime.datetime
+
+
+class AllPosts(BaseTafakariSchema):
+    posts: Optional[list[PostResponseSchema]]
 
 
 class AllPostsInSubredditSchema(BaseTafakariSchema):
