@@ -12,29 +12,28 @@ from ..models.users import User
 user = Blueprint("user", __name__)
 
 
-@user.route("/get/profile", methods=["GET"])
+@user.route("/profile", methods=["GET"])
 @jwt_required(fresh=True)
 def get_profile():
     if current_user:
-        user_profile = User.query.filter(
-            and_(
-                User.username == current_user.username,
-                User.email == current_user.email
+        user_profile = (
+            User.query.filter(
+                and_(
+                    User.username == current_user.username,
+                    User.email == current_user.email,
+                )
             )
-        ).join(
-            Subreddit, User.id == Subreddit.created_by, isouter=True
-        ).join(
-            Post, User.id == Post.created_by, isouter=True
-        ).first()
+            .join(Subreddit, User.id == Subreddit.created_by, isouter=True)
+            .join(Post, User.id == Post.created_by, isouter=True)
+            .first()
+        )
 
         if user_profile:
-            return UserProfileViewSchema.from_orm(
-                user_profile
-            ).dict(
-                exclude_none=True,
-                exclude_unset=True
-            ), HTTPStatus.OK
+            return (
+                UserProfileViewSchema.from_orm(user_profile).dict(
+                    exclude_none=True, exclude_unset=True
+                ),
+                HTTPStatus.OK,
+            )
 
-    return jsonify(
-        message="User not Found"
-    ), HTTPStatus.NOT_FOUND
+    return jsonify(message="User not Found"), HTTPStatus.NOT_FOUND

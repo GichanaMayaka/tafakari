@@ -2,23 +2,30 @@ from http import HTTPStatus
 
 import pendulum
 from flask import Blueprint, jsonify
-from flask_jwt_extended import current_user, jwt_required
+from flask_jwt_extended import current_user, jwt_required, get_jwt_identity
 from flask_pydantic import validate
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import CreateSubredditPostSchema, SubredditViewSchema, UserRequestSchema
-from ..models.posts import Post
+from .schemas import (
+    CreateSubredditRequestSchema,
+    SubredditViewSchema,
+    UserRequestSchema,
+    AllSubredditsViewSchema,
+    UserViewSchema,
+)
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from .authentication import user_identity_lookup
 
-subreddits = Blueprint("subreddit", __name__, template_folder="templates")
+subreddits = Blueprint("subreddit", __name__)
 
 
 @subreddits.route("/subreddits", methods=["POST"])
 @jwt_required(fresh=True)
-@validate(body=CreateSubredditPostSchema)
-def create_subreddit(body: CreateSubredditPostSchema):
+@validate(body=CreateSubredditRequestSchema)
+def create_subreddit(body: CreateSubredditRequestSchema):
+    """Create a subreddit"""
     subreddit = Subreddit.query.filter_by(name=body.name).first()
 
     if not subreddit and current_user:
@@ -26,7 +33,7 @@ def create_subreddit(body: CreateSubredditPostSchema):
             name=body.name, description=body.description, created_by=current_user.id
         )
 
-        new_subreddit.users.append(current_user)
+        new_subreddit.user.append(current_user)
         new_subreddit.save()
 
         return jsonify(message="created"), HTTPStatus.OK
@@ -39,55 +46,50 @@ def create_subreddit(body: CreateSubredditPostSchema):
 
 @subreddits.route("/subreddits", methods=["GET"])
 def get_all_subreddits():
-    all_subs = (
-        Subreddit.query.join(User, User.id == Subreddit.created_by, isouter=True)
-        .with_entities(
-            Subreddit.id, Subreddit.name, Subreddit.created_by, User.username
-        )
-        .all()
-    )
+    """Get all subreddits"""
+    all_subs = Subreddit.query.all()
 
+    response = []
     if all_subs:
+        for sub in all_subs:
+            user = User.query.filter_by(id=sub.created_by).first()
+            user_schema = UserViewSchema.from_orm(user)
+
+            subreddit_schema = SubredditViewSchema(
+                id=sub.id,
+                name=sub.name,
+                description=sub.description,
+                user=user_schema,
+                created_on=sub.created_on,
+            )
+
+            response.append(subreddit_schema)
+
         return (
-            jsonify(
-                subreddits=[
-                    {
-                        "id": sub.id,
-                        "name": sub.name,
-                        "created_by": sub.username,
-                        "creator_id": sub.created_by,
-                    }
-                    for sub in all_subs
-                ]
-            ),
+            jsonify(AllSubredditsViewSchema(subreddits=response).dict()),
             HTTPStatus.OK,
         )
 
-    return jsonify(message="No Subreddits"), HTTPStatus.NOT_FOUND
+    return jsonify(message="Subreddit Not Found"), HTTPStatus.NOT_FOUND
 
 
 @subreddits.route("/subreddits/<int:subreddit_id>", methods=["GET"])
 def get_subreddit_by_id(subreddit_id: int):
-    subreddit = (
-        Subreddit.query.filter(Subreddit.id == subreddit_id)
-        .join(Post, Subreddit.id == Post.belongs_to, isouter=True)
-        .add_columns(
-            Subreddit.name,
-            Subreddit.created_on,
-            Subreddit.created_by,
-            Subreddit.description,
-            Post.title,
-            Post.text,
-            Post.votes,
-        )
-        .first()
-    )
+    """Get a single subreddit"""
+    subreddit = Subreddit.query.filter(Subreddit.id == subreddit_id).first()
 
     if subreddit:
+        user = User.query.filter_by(id=subreddit.created_by).first()
+        user_schema = UserViewSchema.from_orm(user)
+
         return (
-            SubredditViewSchema.from_orm(subreddit).dict(
-                exclude_unset=True, exclude_none=True
-            ),
+            SubredditViewSchema(
+                id=subreddit.id,
+                name=subreddit.name,
+                description=subreddit.description,
+                user=user_schema,
+                created_on=subreddit.created_on,
+            ).dict(),
             HTTPStatus.OK,
         )
 
@@ -97,18 +99,22 @@ def get_subreddit_by_id(subreddit_id: int):
 @subreddits.route("/join/subreddits/<int:subreddit_id>", methods=["GET"])
 @jwt_required(fresh=True)
 def join_a_subreddit(subreddit_id: int):
+    """Join a subreddit"""
     subreddit = Subreddit.get_by_id(subreddit_id)
 
     if subreddit and current_user:
         try:
-            subreddit.users.append(current_user)
+            subreddit.user.append(current_user)
 
             subreddit.save()
 
-            return {
-                "message": f"Successfully joined {subreddit.name}",
-                "time_of_join": f"{pendulum.now()}",
-            }, HTTPStatus.OK
+            return (
+                jsonify(
+                    message=f"Successfully joined {subreddit.name}",
+                    time_of_join=f"{pendulum.now()}",
+                ),
+                HTTPStatus.OK,
+            )
 
         except IntegrityError as error:
             return jsonify(message="You have already joined."), HTTPStatus.FORBIDDEN
@@ -117,10 +123,11 @@ def join_a_subreddit(subreddit_id: int):
 
 
 @subreddits.route("/subreddits/<int:subreddit_id>", methods=["DELETE"])
-@validate(body=UserRequestSchema)
 @jwt_required(fresh=True)
-def delete_a_subreddit(subreddit_id: int, body: UserRequestSchema):
-    creator_id = User.query.filter_by(username=body.username).first()
+def delete_a_subreddit(subreddit_id: int):
+    """Delete a subreddit"""
+    user = get_jwt_identity()
+    creator_id = User.query.filter_by(username=user).first()
 
     if creator_id:
         subreddit_creator = Subreddit.query.filter(
@@ -132,4 +139,7 @@ def delete_a_subreddit(subreddit_id: int, body: UserRequestSchema):
 
             return jsonify(message="Deleted Successfully"), HTTPStatus.ACCEPTED
 
-    return jsonify(message="You are not authorised to delete this subreddit"), HTTPStatus.FORBIDDEN
+    return (
+        jsonify(message="You are not authorised to delete this subreddit"),
+        HTTPStatus.FORBIDDEN,
+    )

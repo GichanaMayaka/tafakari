@@ -5,76 +5,89 @@ from pydantic import BaseModel
 
 
 class BaseTafakariSchema(BaseModel):
+    """Base Model Schema"""
+
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
 
 
+class UserViewSchema(BaseTafakariSchema):
+    """User Response Schema"""
+
+    id: int
+    username: str
+
+
 class UserRequestSchema(BaseTafakariSchema):
+    """User Request Schema"""
+
     username: str
     email: str
     password: str
     is_admin: Optional[bool]
 
 
-class CreateSubredditPostSchema(BaseTafakariSchema):
+class CreateSubredditRequestSchema(BaseTafakariSchema):
+    """Create Subreddit Request Schema"""
+
     name: str
     description: str
 
 
-class PostsBaseModel(BaseTafakariSchema):
-    subreddit_id: int
-    user_id: int
+class SubredditViewSchema(CreateSubredditRequestSchema):
+    """Subreddit Response Schema"""
+
+    id: int
+    user: UserViewSchema
+    created_on: datetime.datetime
 
 
-class PostsRequestSchema(BaseTafakariSchema):
-    title: str
-    text: str
+class AllSubredditsViewSchema(BaseTafakariSchema):
+    """All Subreddits Response Schema"""
+
+    subreddits: list[SubredditViewSchema]
 
 
 class CommentRequestSchema(BaseTafakariSchema):
+    """Comment Request Schema"""
+
     comment: str
 
 
-class CommentResponseSchema(BaseTafakariSchema):
+class CommentViewSchema(CommentRequestSchema):
+    """Comment Response Schema"""
+
     comment_id: int
-    comment: str
     comment_votes: int
     created_on: datetime.datetime
 
 
-class PostResponseSchema(BaseTafakariSchema):
-    id: int
+class CreatePostRequestSchema(BaseTafakariSchema):
+    """Create Post Request Schema"""
+
     title: str
     text: str
+
+
+class PostViewSchema(CreatePostRequestSchema):
+    """Post Response Schema"""
+
+    id: int
     votes: int
     username: str  # username name
     subreddit_name: str  # Subreddit name
-    comments: Optional[list[CommentResponseSchema]]
-
-
-class SubredditResponseSchema(BaseTafakariSchema):
-    id: int
-    name: str
-    description: str
-    created_by: str
-    created_on: datetime.datetime
-
-
-class SubredditViewSchema(BaseTafakariSchema):
-    name: str
-    description: str
-    created_by: str
-    created_on: datetime.datetime
+    comments: Optional[list[CommentViewSchema]]
 
 
 class AllPosts(BaseTafakariSchema):
-    posts: Optional[list[PostResponseSchema]]
+    """All Posts Response Schema"""
+
+    posts: Optional[list[PostViewSchema]]
 
 
-class AllPostsInSubredditSchema(BaseTafakariSchema):
+class AllPostsInSubredditSchema(AllPosts):
     subreddit: str
-    posts: list[PostResponseSchema]
 
 
 class UserProfileViewSchema(BaseTafakariSchema):
@@ -82,5 +95,5 @@ class UserProfileViewSchema(BaseTafakariSchema):
     username: str
     cake_day: datetime.datetime
     email: str
-    subreddits: Optional[list[SubredditResponseSchema]]
-    post: Optional[list[PostResponseSchema]]
+    subreddits: Optional[list[SubredditViewSchema]]
+    post: Optional[list[PostViewSchema]]

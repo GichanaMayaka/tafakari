@@ -1,9 +1,3 @@
 from . import posts, users, subreddits
 
-__all__: object = [
-    "posts",
-    "subreddits",
-    "users",
-    "comments",
-    "schemas"
-]
+__all__: object = ["posts", "subreddits", "users", "comments", "schemas"]
