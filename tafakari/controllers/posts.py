@@ -13,10 +13,12 @@ from .schemas import (
     UserViewSchema,
     CommentViewSchema,
 )
+from ..extensions import cache
 from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from ...configs import configs
 
 posts = Blueprint("post", __name__)
 
@@ -54,6 +56,7 @@ def create_subreddit_post(body: CreatePostRequestSchema):
 
 
 @posts.route("/posts", methods=["GET"])
+@cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_posts():
     """Get all posts regardless of subreddit"""
     all_posts = Post.query.all()
@@ -87,6 +90,7 @@ def get_all_posts():
 
 
 @posts.route("/subreddit/<int:subreddit_id>/posts", methods=["GET"])
+@cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_posts_in_subreddit(subreddit_id: int):
     """Get all the posts in a particular subreddit identified by its Id"""
     subreddit = Subreddit.get_by_id(subreddit_id)
@@ -122,6 +126,7 @@ def get_all_posts_in_subreddit(subreddit_id: int):
 
 
 @posts.route("/posts/<int:post_id>", methods=["GET"])
+@cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_post_by_id(post_id: int):
     post = Post.get_by_id(post_id)
 

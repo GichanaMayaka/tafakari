@@ -28,7 +28,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "cachelib"
-version = "0.10.2"
+version = "0.9.0"
 description = "A collection of cache libraries in the same API interface."
 category = "main"
 optional = false
@@ -121,6 +121,18 @@ bcrypt = ">=3.1.1"
 Flask = "*"
 
 [[package]]
+name = "flask-caching"
+version = "2.0.2"
+description = "Adds caching support to Flask applications."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+cachelib = ">=0.9.0,<0.10.0"
+Flask = "<3"
+
+[[package]]
 name = "flask-jwt-extended"
 version = "4.5.2"
 description = "Extended JWT integration with Flask"
@@ -147,18 +159,6 @@ python-versions = ">=3.6"
 [package.dependencies]
 Flask = "*"
 pydantic = ">=1.7"
-
-[[package]]
-name = "flask-session"
-version = "0.5.0"
-description = "Server-side session support for Flask"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-cachelib = "*"
-flask = ">=2.2"
 
 [[package]]
 name = "flask-sqlalchemy"
@@ -473,7 +473,7 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "97af2587f5d7776ca980c5a1ca558e4b740489da628ef68b39b7f9185288094f"
+content-hash = "bfda56023dcac5ae4a9ac8ee2d57e847829fa60c2e58343f0ceb38322847cb6e"
 
 [metadata.files]
 async-timeout = [
@@ -508,8 +508,8 @@ blinker = [
     { file = "blinker-1.6.2.tar.gz", hash = "sha256:4afd3de66ef3a9f8067559fb7a1cbe555c17dcbe15971b05d1b625c3e7abe213" },
 ]
 cachelib = [
-    { file = "cachelib-0.10.2-py3-none-any.whl", hash = "sha256:42d49f2fad9310dd946d7be73d46776bcd4d5fde4f49ad210cfdd447fbdfc346" },
-    { file = "cachelib-0.10.2.tar.gz", hash = "sha256:593faeee62a7c037d50fc835617a01b887503f972fb52b188ae7e50e9cb69740" },
+    { file = "cachelib-0.9.0-py3-none-any.whl", hash = "sha256:811ceeb1209d2fe51cd2b62810bd1eccf70feba5c52641532498be5c675493b3" },
+    { file = "cachelib-0.9.0.tar.gz", hash = "sha256:38222cc7c1b79a23606de5c2607f4925779e37cdcea1c2ad21b8bae94b5425a5" },
 ]
 click = [
     { file = "click-8.1.6-py3-none-any.whl", hash = "sha256:fa244bb30b3b5ee2cae3da8f55c9e5e0c0e86093306301fb418eb9dc40fbded5" },
@@ -597,6 +597,10 @@ flask-bcrypt = [
     { file = "Flask-Bcrypt-1.0.1.tar.gz", hash = "sha256:f07b66b811417ea64eb188ae6455b0b708a793d966e1a80ceec4a23bc42a4369" },
     { file = "Flask_Bcrypt-1.0.1-py3-none-any.whl", hash = "sha256:062fd991dc9118d05ac0583675507b9fe4670e44416c97e0e6819d03d01f808a" },
 ]
+flask-caching = [
+    { file = "Flask-Caching-2.0.2.tar.gz", hash = "sha256:24b60c552d59a9605cc1b6a42c56cdb39a82a28dab4532bbedb9222ae54ecb4e" },
+    { file = "Flask_Caching-2.0.2-py3-none-any.whl", hash = "sha256:19571f2570e9b8dd9dd9d2f49d7cbee69c14ebe8cc001100b1eb98c379dd80ad" },
+]
 flask-jwt-extended = [
     { file = "Flask-JWT-Extended-4.5.2.tar.gz", hash = "sha256:ba56245ba43b71c8ae936784b867625dce8b9956faeedec2953222e57942fb0b" },
     { file = "Flask_JWT_Extended-4.5.2-py2.py3-none-any.whl", hash = "sha256:e0ef23d8c863746bd141046167073699e1a7b03c97169cbba70f05b8d9cd6b9e" },
@@ -604,10 +608,6 @@ flask-jwt-extended = [
 flask-pydantic = [
     { file = "Flask-Pydantic-0.11.0.tar.gz", hash = "sha256:eef679b24e34ffb02e24e1d998ac023007aa2b531927fdc2f9b8114a12c19bb4" },
     { file = "Flask_Pydantic-0.11.0-py3-none-any.whl", hash = "sha256:c5a6283d1227631683ceb72a41f652036829476fbb6e7b6ccef8cae8ed51ebab" },
-]
-flask-session = [
-    { file = "Flask-Session-0.5.0.tar.gz", hash = "sha256:190875e6aebf2953c6803d42379ef3b934bc209ef8ef006f97aecb08f5aaeb86" },
-    { file = "flask_session-0.5.0-py3-none-any.whl", hash = "sha256:1619bcbc16f04f64e90f8e0b17145ba5c9700090bb1294e889956c1282d58631" },
 ]
 flask-sqlalchemy = [
     { file = "flask_sqlalchemy-3.0.5-py3-none-any.whl", hash = "sha256:cabb6600ddd819a9f859f36515bb1bd8e7dbf30206cc679d2b081dff9e383283" },

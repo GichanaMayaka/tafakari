@@ -1,6 +1,5 @@
 from flask import Flask
 
-from ..configs import configs
 from .commands import (create_db, create_tables, drop_db, drop_tables,
                        recreate_db, seed, seed_users)
 from .controllers.authentication import authentications
@@ -9,13 +8,14 @@ from .controllers.posts import posts
 from .controllers.subreddits import subreddits
 from .controllers.users import user
 from .database import SQLALCHEMY_DATABASE_URI, db
-from .extensions import bcrypt, jwt, sess
+from .extensions import bcrypt, jwt, cors, cache
+from ..configs import configs
 
 
 def create_app(
-    database_uri: str = SQLALCHEMY_DATABASE_URI,
-    configurations: object = configs,
-    additional_binds: dict = None,
+        database_uri: str = SQLALCHEMY_DATABASE_URI,
+        configurations: object = configs,
+        additional_binds: dict = None,
 ) -> Flask:
     app = Flask(__name__)
     app.config.from_object(configurations)
@@ -47,8 +47,9 @@ def create_app(
 def register_extensions(app: Flask) -> None:
     db.init_app(app=app)
     bcrypt.init_app(app=app)
-    sess.init_app(app=app)
     jwt.init_app(app=app)
+    cache.init_app(app=app, config={"CACHE_TYPE": configs.CACHE_TYPE})
+    cors.init_app(app=app)
 
 
 def register_commands(app: Flask) -> None:

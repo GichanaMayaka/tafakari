@@ -13,8 +13,10 @@ from .schemas import (
     AllSubredditsViewSchema,
     UserViewSchema,
 )
+from ..extensions import cache
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from ...configs import configs
 
 subreddits = Blueprint("subreddit", __name__)
 
@@ -43,6 +45,7 @@ def create_subreddit(body: CreateSubredditRequestSchema):
 
 
 @subreddits.route("/subreddits", methods=["GET"])
+@cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_subreddits():
     """Get all subreddits"""
     all_subs = Subreddit.query.all()

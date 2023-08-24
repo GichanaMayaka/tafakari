@@ -19,6 +19,9 @@ class DevConfig(BaseSettings):
     REDIS_PORT: int
     DEBUG: bool = True
 
+    CACHE_TYPE: Final[str] = "RedisCache"
+    CACHE_DEFAULT_TIMEOUT: int
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
