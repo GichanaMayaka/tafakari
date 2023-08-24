@@ -32,9 +32,6 @@ def add_comment(body: CommentRequestSchema, post_id: int):
             HTTPStatus.CREATED,
         )
 
-    if not post:
-        return jsonify(message="No such post"), HTTPStatus.NOT_FOUND
-
     return jsonify(message="No such post exists"), HTTPStatus.NOT_FOUND
 
 
@@ -54,14 +51,12 @@ def delete_a_comment(post_id: int, comment_id: int):
             return jsonify(message="Comment deleted successfully"), HTTPStatus.OK
 
         elif not comment:
-            return jsonify(message="Cannot delete comment."), HTTPStatus.NOT_FOUND
+            return jsonify(message="The comment you selected does not exist"), HTTPStatus.NOT_FOUND
 
-    return jsonify(message="No such post exists"), HTTPStatus.NOT_FOUND
+    return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
 
 
-@comments.route(
-    "/posts/<int:post_id>/comments/<int:comment_id>/upvote", methods=["GET"]
-)
+@comments.route("/posts/<int:post_id>/comments/<int:comment_id>/upvote", methods=["GET"])
 @jwt_required(fresh=True)
 def upvote_a_post_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
@@ -86,9 +81,7 @@ def upvote_a_post_comment(post_id: int, comment_id: int):
     return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
 
 
-@comments.route(
-    "/posts/<int:post_id>/comments/<int:comment_id>/downvote", methods=["GET"]
-)
+@comments.route("/posts/<int:post_id>/comments/<int:comment_id>/downvote", methods=["GET"])
 @jwt_required(fresh=True)
 def downvote_a_post_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
@@ -100,11 +93,14 @@ def downvote_a_post_comment(post_id: int, comment_id: int):
 
         if comment and current_user:
             comment.update(votes=comment.votes - 1)
+
             comment.save()
 
             return jsonify(message="Down-voted Successfully"), HTTPStatus.ACCEPTED
 
-    return (
-        jsonify(message="The comment you selected does not exist"),
-        HTTPStatus.NOT_FOUND,
-    )
+        return (
+            jsonify(message="The comment you selected does not exist"),
+            HTTPStatus.NOT_FOUND,
+        )
+
+    return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
