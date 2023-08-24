@@ -58,35 +58,42 @@ class CommentRequestSchema(BaseTafakariSchema):
 class CommentViewSchema(CommentRequestSchema):
     """Comment Response Schema"""
 
-    comment_id: int
-    comment_votes: int
+    id: int
+    votes: int
     created_on: datetime.datetime
+    user: UserViewSchema
 
 
 class CreatePostRequestSchema(BaseTafakariSchema):
     """Create Post Request Schema"""
 
+    subreddit_id: int
     title: str
     text: str
 
 
-class PostViewSchema(CreatePostRequestSchema):
+class PostViewSchema(BaseTafakariSchema):
     """Post Response Schema"""
 
     id: int
+    subreddit_id: int
+    title: str
+    text: str
     votes: int
-    username: str  # username name
-    subreddit_name: str  # Subreddit name
+    user: UserViewSchema
     comments: Optional[list[CommentViewSchema]]
 
 
-class AllPosts(BaseTafakariSchema):
+class AllPostsViewSchema(BaseTafakariSchema):
     """All Posts Response Schema"""
 
     posts: Optional[list[PostViewSchema]]
 
 
-class AllPostsInSubredditSchema(AllPosts):
+class AllPostsInSubredditSchema(AllPostsViewSchema):
+    """All Posts in Subreddit Request Schema"""
+
+    id: int
     subreddit: str
 
 

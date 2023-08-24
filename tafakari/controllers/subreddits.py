@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import pendulum
 from flask import Blueprint, jsonify
-from flask_jwt_extended import current_user, jwt_required, get_jwt_identity
+from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
@@ -10,13 +10,11 @@ from sqlalchemy.exc import IntegrityError
 from .schemas import (
     CreateSubredditRequestSchema,
     SubredditViewSchema,
-    UserRequestSchema,
     AllSubredditsViewSchema,
     UserViewSchema,
 )
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from .authentication import user_identity_lookup
 
 subreddits = Blueprint("subreddit", __name__)
 
@@ -126,8 +124,7 @@ def join_a_subreddit(subreddit_id: int):
 @jwt_required(fresh=True)
 def delete_a_subreddit(subreddit_id: int):
     """Delete a subreddit"""
-    user = get_jwt_identity()
-    creator_id = User.query.filter_by(username=user).first()
+    creator_id = User.query.filter_by(username=current_user.username).first()
 
     if creator_id:
         subreddit_creator = Subreddit.query.filter(
