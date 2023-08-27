@@ -174,12 +174,10 @@ def get_post_by_id(post_id: int):
 @jwt_required(fresh=True)
 def upvote_a_post(post_id: int):
     # TODO: Make up-votes unique per user
-    post = Post.query.filter(and_(Post.id == post_id)).first()
+    post = Post.get_by_id(post_id).first()
 
     if post and current_user:
         post.update(votes=post.votes + 1)
-
-        post.save()
 
         return jsonify(message="Up-voted Successfully"), HTTPStatus.ACCEPTED
 
@@ -194,8 +192,6 @@ def downvote_a_post(post_id: int):
 
     if post and current_user:
         post.update(votes=post.votes - 1)
-
-        post.save()
 
         return jsonify(message="Down-voted Successfully"), HTTPStatus.ACCEPTED
 

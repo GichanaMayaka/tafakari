@@ -36,7 +36,6 @@ def create_app(
 
     @app.after_request
     def set_headers(response):
-        response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allowed-Methods"] = "GET, POST, DELETE, PUT"
         response.headers["Content-Type"] = "application/json"
         return response

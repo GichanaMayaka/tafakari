@@ -86,7 +86,7 @@ def logout():
 @authentications.route("/register", methods=["POST"])
 @validate(body=UserRequestSchema)
 def register(body: UserRequestSchema):
-    existing_user: User = User.query.filter(
+    existing_user = User.query.filter(
         and_(User.username == body.username, User.email == body.email)
     ).first()
 
@@ -113,6 +113,6 @@ def register(body: UserRequestSchema):
 
     except exc.IntegrityError as exception:
         return (
-            jsonify(message="A user with the same credentials is registered"),
+            jsonify(message="A user with the same credentials is registered."),
             HTTPStatus.CONFLICT,
         )

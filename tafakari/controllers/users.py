@@ -2,9 +2,9 @@ from http import HTTPStatus
 
 from flask import Blueprint, jsonify
 from flask_jwt_extended import current_user, jwt_required
-from sqlalchemy import and_
 
-from .schemas import UserProfileViewSchema
+from .schemas import UserProfileViewSchema, AllSubredditsViewSchema, AllPostsViewSchema, SubredditViewSchema, \
+    PostViewSchema
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
@@ -16,24 +16,36 @@ user = Blueprint("user", __name__)
 @jwt_required(fresh=True)
 def get_profile():
     if current_user:
-        user_profile = (
-            User.query.filter(
-                and_(
-                    User.username == current_user.username,
-                    User.email == current_user.email,
-                )
-            )
-            .join(Subreddit, User.id == Subreddit.created_by, isouter=True)
-            .join(Post, User.id == Post.created_by, isouter=True)
-            .first()
-        )
+        profile = User.query.filter_by(username=current_user.username).first()
 
-        if user_profile:
-            return (
-                UserProfileViewSchema.from_orm(user_profile).dict(
-                    exclude_none=True, exclude_unset=True
-                ),
-                HTTPStatus.OK,
-            )
+        if profile:
+            subreddits_schema = AllSubredditsViewSchema(subreddits=[SubredditViewSchema(
+                name=subreddit.name,
+                description=subreddit.description,
+                id=subreddit.id,
+                user=None,
+                created_on=subreddit.created_on
+            ) for subreddit in Subreddit.query.filter(Subreddit.created_by == profile.id).all()])
+
+            posts_schema = AllPostsViewSchema(posts=[PostViewSchema(
+                id=post.id,
+                subreddit_id=post.belongs_to,
+                title=post.title,
+                text=post.text,
+                votes=post.votes,
+                user=None,
+                comments=None,
+            ) for post in Post.query.filter(Post.created_by == profile.id).all()])
+
+            response = UserProfileViewSchema(
+                id=profile.id,
+                username=profile.username,
+                cake_day=profile.cake_day,
+                email=profile.email,
+                subreddits=subreddits_schema,
+                posts=posts_schema
+            ).dict(exclude_unset=True, exclude_none=True)
+
+            return response, HTTPStatus.OK
 
     return jsonify(message="User not Found"), HTTPStatus.NOT_FOUND

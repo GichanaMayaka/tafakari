@@ -28,27 +28,6 @@ class UserRequestSchema(BaseTafakariSchema):
     is_admin: Optional[bool]
 
 
-class CreateSubredditRequestSchema(BaseTafakariSchema):
-    """Create Subreddit Request Schema"""
-
-    name: str
-    description: str
-
-
-class SubredditViewSchema(CreateSubredditRequestSchema):
-    """Subreddit Response Schema"""
-
-    id: int
-    user: UserViewSchema
-    created_on: datetime.datetime
-
-
-class AllSubredditsViewSchema(BaseTafakariSchema):
-    """All Subreddits Response Schema"""
-
-    subreddits: list[SubredditViewSchema]
-
-
 class CommentRequestSchema(BaseTafakariSchema):
     """Comment Request Schema"""
 
@@ -80,7 +59,7 @@ class PostViewSchema(BaseTafakariSchema):
     title: str
     text: str
     votes: int
-    user: UserViewSchema
+    user: Optional[UserViewSchema]
     comments: Optional[list[CommentViewSchema]]
 
 
@@ -90,17 +69,29 @@ class AllPostsViewSchema(BaseTafakariSchema):
     posts: Optional[list[PostViewSchema]]
 
 
-class AllPostsInSubredditSchema(AllPostsViewSchema):
-    """All Posts in Subreddit Request Schema"""
+class CreateSubredditRequestSchema(BaseTafakariSchema):
+    """Create Subreddit Request Schema"""
+
+    name: str
+    description: str
+
+
+class SubredditViewSchema(CreateSubredditRequestSchema):
+    """Subreddit Response Schema"""
 
     id: int
-    subreddit: str
+    user: Optional[UserViewSchema]
+    created_on: datetime.datetime
 
 
-class UserProfileViewSchema(BaseTafakariSchema):
-    external_id: str
-    username: str
+class AllSubredditsViewSchema(BaseTafakariSchema):
+    """All Subreddits Response Schema"""
+
+    subreddits: list[SubredditViewSchema]
+
+
+class UserProfileViewSchema(UserViewSchema):
     cake_day: datetime.datetime
     email: str
-    subreddits: Optional[list[SubredditViewSchema]]
-    post: Optional[list[PostViewSchema]]
+    subreddits: Optional[AllSubredditsViewSchema]
+    posts: Optional[AllPostsViewSchema]
