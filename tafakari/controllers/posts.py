@@ -75,6 +75,7 @@ def get_all_posts():
                 votes=post.votes,
                 user=creator_schema,
                 comments=None,
+                created_on=post.created_on,
             )
 
             all_posts_response.append(post)
@@ -111,6 +112,8 @@ def get_all_posts_in_subreddit(subreddit_id: int):
                     text=post.text,
                     votes=post.votes,
                     user=post_creator_schema,
+                    created_on=post.created_on,
+                    comments=None,
                 )
 
                 all_posts_response.append(post)
@@ -126,7 +129,6 @@ def get_all_posts_in_subreddit(subreddit_id: int):
 
 
 @posts.route("/posts/<int:post_id>", methods=["GET"])
-@cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_post_by_id(post_id: int):
     post = Post.get_by_id(post_id)
 
@@ -163,6 +165,7 @@ def get_post_by_id(post_id: int):
                 votes=post.votes,
                 user=post_creator_schema,
                 comments=comments_collection,
+                created_on=post.created_on,
             ).dict(exclude_none=True)
 
             return post_response, HTTPStatus.OK

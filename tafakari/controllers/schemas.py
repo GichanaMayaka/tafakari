@@ -59,6 +59,7 @@ class PostViewSchema(BaseTafakariSchema):
     title: str
     text: str
     votes: int
+    created_on: datetime.datetime
     user: Optional[UserViewSchema]
     comments: Optional[list[CommentViewSchema]]
 

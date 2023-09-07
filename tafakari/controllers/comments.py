@@ -5,9 +5,9 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from .schemas import CommentRequestSchema
 from ..models.comments import Comments
 from ..models.posts import Post
+from .schemas import CommentRequestSchema
 
 comments = Blueprint("comments", __name__)
 
@@ -51,12 +51,17 @@ def delete_a_comment(post_id: int, comment_id: int):
             return jsonify(message="Comment deleted successfully"), HTTPStatus.OK
 
         elif not comment:
-            return jsonify(message="The comment you selected does not exist"), HTTPStatus.NOT_FOUND
+            return (
+                jsonify(message="The comment you selected does not exist"),
+                HTTPStatus.NOT_FOUND,
+            )
 
     return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/posts/<int:post_id>/comments/<int:comment_id>/upvote", methods=["GET"])
+@comments.route(
+    "/posts/<int:post_id>/comments/<int:comment_id>/upvote", methods=["GET"]
+)
 @jwt_required(fresh=True)
 def upvote_a_post_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
@@ -81,7 +86,9 @@ def upvote_a_post_comment(post_id: int, comment_id: int):
     return jsonify(message="The post cannot be found"), HTTPStatus.NOT_FOUND
 
 
-@comments.route("/posts/<int:post_id>/comments/<int:comment_id>/downvote", methods=["GET"])
+@comments.route(
+    "/posts/<int:post_id>/comments/<int:comment_id>/downvote", methods=["GET"]
+)
 @jwt_required(fresh=True)
 def downvote_a_post_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
