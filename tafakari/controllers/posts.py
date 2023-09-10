@@ -90,7 +90,7 @@ def get_all_posts():
     return jsonify(message="No Post Found"), HTTPStatus.NOT_FOUND
 
 
-@posts.route("/subreddit/<int:subreddit_id>/posts", methods=["GET"])
+@posts.route("/subreddits/<int:subreddit_id>/posts", methods=["GET"])
 @cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_posts_in_subreddit(subreddit_id: int):
     """Get all the posts in a particular subreddit identified by its Id"""
