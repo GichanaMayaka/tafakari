@@ -50,7 +50,7 @@ def register_extensions(app: Flask) -> None:
     jwt.init_app(app=app)
     cache.init_app(app=app, config={"CACHE_TYPE": configs.CACHE_TYPE})
     cors.init_app(app=app)
-    migrations.init_app(app=app)
+    migrations.init_app(app=app, db=db)
 
 
 def register_commands(app: Flask) -> None:
