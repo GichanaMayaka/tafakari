@@ -22,6 +22,7 @@ sqlalchemy-utils = "^0.38.3"
 flask-jwt-extended = "^4.4.4"
 redis = "^4.4.0"
 flask-caching = "^2.0.2"
+flask-migrate = "^4.0.4"
 
 
 [build-system]

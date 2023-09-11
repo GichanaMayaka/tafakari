@@ -1,5 +1,4 @@
 .venv/
-/migrations/
 
 **/.pytest_cache/*
 **/__pycache__/*
