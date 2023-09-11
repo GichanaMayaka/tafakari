@@ -13,7 +13,7 @@ from .schemas import (
     AllSubredditsViewSchema,
     UserViewSchema,
 )
-from ..extensions import cache
+from ..extensions import cache, limiter
 from ..models.subreddit import Subreddit
 from ..models.users import User
 from ...configs import configs
@@ -22,6 +22,7 @@ subreddits = Blueprint("subreddit", __name__)
 
 
 @subreddits.route("/subreddits", methods=["POST"])
+@limiter.limit("10/day")
 @jwt_required(fresh=True)
 @validate(body=CreateSubredditRequestSchema)
 def create_subreddit(body: CreateSubredditRequestSchema):
@@ -45,6 +46,7 @@ def create_subreddit(body: CreateSubredditRequestSchema):
 
 
 @subreddits.route("/subreddits", methods=["GET"])
+@limiter.limit("1000/day")
 @cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_subreddits():
     """Get all subreddits"""
@@ -75,6 +77,7 @@ def get_all_subreddits():
 
 
 @subreddits.route("/subreddits/<int:subreddit_id>", methods=["GET"])
+@limiter.limit("1000/day")
 def get_subreddit_by_id(subreddit_id: int):
     """Get a single subreddit"""
     subreddit = Subreddit.query.filter(Subreddit.id == subreddit_id).first()
@@ -98,6 +101,7 @@ def get_subreddit_by_id(subreddit_id: int):
 
 
 @subreddits.route("/join/subreddits/<int:subreddit_id>", methods=["GET"])
+@limiter.exempt
 @jwt_required(fresh=True)
 def join_a_subreddit(subreddit_id: int):
     """Join a subreddit"""
@@ -124,6 +128,7 @@ def join_a_subreddit(subreddit_id: int):
 
 
 @subreddits.route("/subreddits/<int:subreddit_id>", methods=["DELETE"])
+@limiter.exempt("10/day")
 @jwt_required(fresh=True)
 def delete_a_subreddit(subreddit_id: int):
     """Delete a subreddit"""

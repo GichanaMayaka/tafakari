@@ -13,7 +13,7 @@ from .schemas import (
     UserViewSchema,
     CommentViewSchema,
 )
-from ..extensions import cache
+from ..extensions import cache, limiter
 from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
@@ -24,6 +24,7 @@ posts = Blueprint("post", __name__)
 
 
 @posts.route("/posts", methods=["POST"])
+@limiter.limit("10/day")
 @validate(body=CreatePostRequestSchema)
 @jwt_required(fresh=True)
 def create_subreddit_post(body: CreatePostRequestSchema):
@@ -56,6 +57,7 @@ def create_subreddit_post(body: CreatePostRequestSchema):
 
 
 @posts.route("/posts", methods=["GET"])
+@limiter.limit("1000/day")
 @cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_posts():
     """Get all posts regardless of subreddit"""
@@ -91,6 +93,7 @@ def get_all_posts():
 
 
 @posts.route("/subreddits/<int:subreddit_id>/posts", methods=["GET"])
+@limiter.limit("1000/day")
 @cache.cached(timeout=configs.CACHE_DEFAULT_TIMEOUT)
 def get_all_posts_in_subreddit(subreddit_id: int):
     """Get all the posts in a particular subreddit identified by its Id"""
@@ -129,6 +132,7 @@ def get_all_posts_in_subreddit(subreddit_id: int):
 
 
 @posts.route("/posts/<int:post_id>", methods=["GET"])
+@limiter.limit("1000/day")
 def get_post_by_id(post_id: int):
     post = Post.get_by_id(post_id)
 
@@ -174,6 +178,7 @@ def get_post_by_id(post_id: int):
 
 
 @posts.route("/posts/<int:post_id>/upvote", methods=["GET"])
+@limiter.exempt
 @jwt_required(fresh=True)
 def upvote_a_post(post_id: int):
     # TODO: Make up-votes unique per user
@@ -188,6 +193,7 @@ def upvote_a_post(post_id: int):
 
 
 @posts.route("/posts/<int:post_id>/downvote", methods=["GET"])
+@limiter.exempt
 @jwt_required(fresh=True)
 def downvote_a_post(post_id: int):
     # TODO: Make down-votes unique per user

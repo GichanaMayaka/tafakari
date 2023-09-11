@@ -9,7 +9,7 @@ from flask_pydantic import validate
 from sqlalchemy import and_, exc
 
 from .schemas import UserRequestSchema, UserProfileViewSchema
-from ..extensions import jwt
+from ..extensions import jwt, limiter
 from ..models.users import User, check_password
 from ...configs import configs
 
@@ -44,6 +44,7 @@ def add_additional_claims(identity: Any):
 
 
 @authentications.route("/login", methods=["POST"])
+@limiter.limit("3/minute")
 @validate(body=UserRequestSchema)
 def login(body: UserRequestSchema):
     user = User.query.filter(
@@ -77,6 +78,7 @@ def login(body: UserRequestSchema):
 
 @authentications.route("/logout", methods=["DELETE"])
 @jwt_required(fresh=True)
+@limiter.exempt
 def logout():
     jti = get_jwt()["jti"]
     jwt_redis_blocklist.set(jti, "", ex=configs.JWT_ACCESS_TOKEN_EXPIRES)

@@ -5,14 +5,16 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
+from .schemas import CommentRequestSchema
+from .. import limiter
 from ..models.comments import Comments
 from ..models.posts import Post
-from .schemas import CommentRequestSchema
 
 comments = Blueprint("comments", __name__)
 
 
 @comments.route("/posts/<int:post_id>/comments", methods=["POST"])
+@limiter.limit("100/day")
 @validate(body=CommentRequestSchema)
 @jwt_required(fresh=True)
 def add_comment(body: CommentRequestSchema, post_id: int):
@@ -36,6 +38,7 @@ def add_comment(body: CommentRequestSchema, post_id: int):
 
 
 @comments.route("/posts/<int:post_id>/comments/<int:comment_id>", methods=["DELETE"])
+@limiter.limit("10/day")
 @jwt_required(fresh=True)
 def delete_a_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
@@ -62,6 +65,7 @@ def delete_a_comment(post_id: int, comment_id: int):
 @comments.route(
     "/posts/<int:post_id>/comments/<int:comment_id>/upvote", methods=["GET"]
 )
+@limiter.exempt
 @jwt_required(fresh=True)
 def upvote_a_post_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
@@ -89,6 +93,7 @@ def upvote_a_post_comment(post_id: int, comment_id: int):
 @comments.route(
     "/posts/<int:post_id>/comments/<int:comment_id>/downvote", methods=["GET"]
 )
+@limiter.exempt
 @jwt_required(fresh=True)
 def downvote_a_post_comment(post_id: int, comment_id: int):
     post = Post.query.filter(Post.id == post_id).first()
