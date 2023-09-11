@@ -7,16 +7,16 @@ from flask_pydantic import validate
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import (
-    CreateSubredditRequestSchema,
-    SubredditViewSchema,
-    AllSubredditsViewSchema,
-    UserViewSchema,
-)
+from ...configs import configs
 from ..extensions import cache, limiter
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from ...configs import configs
+from .schemas import (
+    AllSubredditsViewSchema,
+    CreateSubredditRequestSchema,
+    SubredditViewSchema,
+    UserViewSchema,
+)
 
 subreddits = Blueprint("subreddit", __name__)
 
@@ -128,7 +128,7 @@ def join_a_subreddit(subreddit_id: int):
 
 
 @subreddits.route("/subreddits/<int:subreddit_id>", methods=["DELETE"])
-@limiter.exempt("10/day")
+@limiter.exempt
 @jwt_required(fresh=True)
 def delete_a_subreddit(subreddit_id: int):
     """Delete a subreddit"""

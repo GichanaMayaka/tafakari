@@ -5,10 +5,10 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from .schemas import CommentRequestSchema
-from .. import limiter
+from ..extensions import limiter
 from ..models.comments import Comments
 from ..models.posts import Post
+from .schemas import CommentRequestSchema
 
 comments = Blueprint("comments", __name__)
 

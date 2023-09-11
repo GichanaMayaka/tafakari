@@ -6,19 +6,19 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from .schemas import (
-    AllPostsViewSchema,
-    CreatePostRequestSchema,
-    PostViewSchema,
-    UserViewSchema,
-    CommentViewSchema,
-)
+from ...configs import configs
 from ..extensions import cache, limiter
 from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from ...configs import configs
+from .schemas import (
+    AllPostsViewSchema,
+    CommentViewSchema,
+    CreatePostRequestSchema,
+    PostViewSchema,
+    UserViewSchema,
+)
 
 posts = Blueprint("post", __name__)
 

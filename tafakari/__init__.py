@@ -1,5 +1,6 @@
 from flask import Flask
 
+from ..configs import configs
 from .commands import (
     create_db,
     create_tables,
@@ -16,7 +17,6 @@ from .controllers.subreddits import subreddits
 from .controllers.users import user
 from .database import SQLALCHEMY_DATABASE_URI, db
 from .extensions import bcrypt, cache, cors, jwt, limiter, migrations
-from ..configs import configs
 
 
 def create_app(
