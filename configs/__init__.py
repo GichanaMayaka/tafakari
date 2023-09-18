@@ -39,6 +39,9 @@ class ProdConfig(DevConfig):
 class TestConfig(DevConfig):
     TESTING: Final[bool] = True
 
+    class Config:
+        env_prefix: str = "TEST_"
+
 
 def factory():
     env = os.environ.get("ENV", "dev")

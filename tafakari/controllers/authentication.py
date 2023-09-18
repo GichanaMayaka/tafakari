@@ -8,10 +8,10 @@ from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_, exc
 
-from ...configs import configs
+from .schemas import UserRequestSchema, UserViewSchema
 from ..extensions import jwt, limiter
 from ..models.users import User, check_password
-from .schemas import UserProfileViewSchema, UserRequestSchema
+from ...configs import configs
 
 authentications = Blueprint("authentication", __name__, url_prefix="/auth")
 
@@ -104,14 +104,14 @@ def register(body: UserRequestSchema):
         )
         new_user.save()
 
-        return UserProfileViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
+        return UserViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
 
     try:
         new_user = User.create(
             username=body.username, email=body.email, password=body.password
         )
 
-        return UserProfileViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
+        return UserViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
 
     except exc.IntegrityError as exception:
         return (
