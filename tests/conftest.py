@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 from flask import Flask
 from flask.testing import FlaskClient
@@ -39,3 +41,17 @@ def register_test_user(client_app):
             email="tester@email.com",
             password="password"
         ))
+
+
+@pytest.fixture(autouse=True)
+def login_test_user(client_app: FlaskClient, register_test_user):
+    with client_app as test_client:
+        response = test_client.post("/auth/login", json=dict(
+            username="tester",
+            email="tester@email.com",
+            password="password"
+        ))
+
+    assert response.status_code == HTTPStatus.ACCEPTED
+
+    return response
