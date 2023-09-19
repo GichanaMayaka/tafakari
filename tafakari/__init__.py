@@ -1,6 +1,7 @@
+import os
+
 from flask import Flask
 
-from ..configs import configs
 from .commands import (
     create_db,
     create_tables,
@@ -17,12 +18,13 @@ from .controllers.subreddits import subreddits
 from .controllers.users import user
 from .database import SQLALCHEMY_DATABASE_URI, db
 from .extensions import bcrypt, cache, cors, jwt, limiter, migrations
+from ..configs import configs
 
 
 def create_app(
-    database_uri: str = SQLALCHEMY_DATABASE_URI,
-    configurations: object = configs,
-    additional_binds: dict = None,
+        database_uri: str = SQLALCHEMY_DATABASE_URI,
+        configurations: object = configs,
+        additional_binds: dict = None,
 ) -> Flask:
     """Application Factory"""
     app = Flask(__name__)
@@ -31,6 +33,10 @@ def create_app(
 
     if additional_binds:
         app.config["SQLALCHEMY_BINDS"] = additional_binds
+
+    if os.getenv("ENV") == "test" or os.getenv("ENV") == "dev":
+        # Disable rate-limiting according to the environment
+        limiter.enabled = False
 
     register_extensions(app=app)
     register_commands(app=app)

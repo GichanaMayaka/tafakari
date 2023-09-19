@@ -4,7 +4,7 @@ import pytest
 from flask import Flask
 from flask.testing import FlaskClient
 from sqlalchemy import create_engine
-from sqlalchemy_utils import database_exists, create_database, drop_database
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from tafakari import create_app
 from tafakari.configs import configs
@@ -36,22 +36,39 @@ def client_app(app: Flask) -> FlaskClient:
 @pytest.fixture()
 def register_test_user(client_app):
     with client_app as test_client:
-        test_client.post("/auth/register", json=dict(
-            username="tester",
-            email="tester@email.com",
-            password="password"
-        ))
+        test_client.post(
+            "/auth/register",
+            json=dict(username="tester", email="tester@email.com", password="password"),
+        )
 
 
 @pytest.fixture(autouse=True)
-def login_test_user(client_app: FlaskClient, register_test_user):
+def login_test_user(client_app: FlaskClient, register_test_user) -> str:
     with client_app as test_client:
-        response = test_client.post("/auth/login", json=dict(
-            username="tester",
-            email="tester@email.com",
-            password="password"
-        ))
+        response = test_client.post(
+            "/auth/login",
+            json=dict(username="tester", email="tester@email.com", password="password"),
+        )
 
     assert response.status_code == HTTPStatus.ACCEPTED
 
-    return response
+    return response.json["access_token"]
+
+
+@pytest.fixture()
+def mock_subreddit(client_app, login_test_user) -> dict:
+    mock_subreddit = dict(name="Test Subreddit", description="This is a test Subreddit")
+
+    with client_app as test_client:
+        response = test_client.post(
+            "/subreddits",
+            json=mock_subreddit,
+            headers={
+                "Authorization": f"Bearer {login_test_user}",
+                "Content-Type": "application/json",
+            },
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        return response.json
