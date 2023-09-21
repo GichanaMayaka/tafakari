@@ -34,7 +34,8 @@ def create_app(
     if additional_binds:
         app.config["SQLALCHEMY_BINDS"] = additional_binds
 
-    if os.getenv("ENV") == "test" or os.getenv("ENV") == "dev":
+    env = os.getenv("ENV")
+    if env == "test" or env == "dev":
         # Disable rate-limiting according to the environment
         limiter.enabled = False
 
