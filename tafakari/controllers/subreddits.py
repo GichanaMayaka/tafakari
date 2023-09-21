@@ -7,16 +7,16 @@ from flask_pydantic import validate
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
-from ...configs import configs
-from ..extensions import cache, limiter
-from ..models.subreddit import Subreddit
-from ..models.users import User
 from .schemas import (
     AllSubredditsViewSchema,
     CreateSubredditRequestSchema,
     SubredditViewSchema,
     UserViewSchema,
 )
+from ..extensions import cache, limiter
+from ..models.subreddit import Subreddit
+from ..models.users import User
+from ...configs import configs
 
 subreddits = Blueprint("subreddit", __name__)
 
@@ -37,7 +37,7 @@ def create_subreddit(body: CreateSubredditRequestSchema):
         new_subreddit.user.append(current_user)
         new_subreddit.save()
 
-        return jsonify(message="created"), HTTPStatus.OK
+        return jsonify(message="created"), HTTPStatus.CREATED
 
     return (
         jsonify(message=f"A subreddit with the title: {body.name}, already exists"),

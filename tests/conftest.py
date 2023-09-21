@@ -69,6 +69,25 @@ def mock_subreddit(client_app, login_test_user) -> dict:
             },
         )
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.CREATED
+
+        return response.json
+
+
+@pytest.fixture()
+def mock_post(client_app, login_test_user, mock_subreddit):
+    mock_post = dict(title="Test Post", text="Test Post", subreddit_id=1)
+
+    with client_app as test_client:
+        response = test_client.post(
+            "/posts",
+            json=mock_post,
+            headers={
+                "Authorization": f"Bearer {login_test_user}",
+                "Content-Type": "application/json",
+            },
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
 
         return response.json

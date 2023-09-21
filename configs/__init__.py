@@ -12,12 +12,12 @@ class DevConfig(BaseSettings):
     SESSION_TYPE: str
 
     SECRET_KEY: str
-    JWT_ALGORITHM: str = "HS256"
+    JWT_ALGORITHM: Final[str] = "HS256"
     JWT_ACCESS_TOKEN_EXPIRES: Final[datetime.timedelta] = datetime.timedelta(minutes=30)
 
     REDIS_HOSTNAME: str
     REDIS_PORT: int
-    DEBUG: bool = True
+    DEBUG: Final[bool] = True
 
     CACHE_TYPE: Final[str] = "RedisCache"
     CACHE_DEFAULT_TIMEOUT: int
@@ -25,7 +25,7 @@ class DevConfig(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        env_prefix: str = "DEV_"
+        env_prefix: Final[str] = "DEV_"
 
 
 class ProdConfig(DevConfig):
@@ -33,14 +33,14 @@ class ProdConfig(DevConfig):
     DEBUG: Final[bool] = False
 
     class Config:
-        env_prefix: str = "PROD_"
+        env_prefix: Final[str] = "PROD_"
 
 
 class TestConfig(DevConfig):
     TESTING: Final[bool] = True
 
     class Config:
-        env_prefix: str = "TEST_"
+        env_prefix: Final[str] = "TEST_"
 
 
 def factory():

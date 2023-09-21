@@ -34,7 +34,7 @@ def test_create_a_subreddit_valid(client_app, login_test_user):
             "/subreddits", json=mock_subreddit, headers=set_valid_token(login_test_user)
         )
 
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.CREATED
         assert response.json == dict(message="created")
 
 
