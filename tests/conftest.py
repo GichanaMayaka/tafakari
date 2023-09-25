@@ -34,7 +34,7 @@ def client_app(app: Flask) -> FlaskClient:
 
 
 @pytest.fixture()
-def register_test_user(client_app):
+def register_test_user(client_app) -> None:
     with client_app as test_client:
         test_client.post(
             "/auth/register",
@@ -55,7 +55,7 @@ def login_test_user(client_app: FlaskClient, register_test_user) -> str:
     return response.json["access_token"]
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def mock_subreddit(client_app, login_test_user) -> dict:
     mock_subreddit = dict(name="Test Subreddit", description="This is a test Subreddit")
 
@@ -74,8 +74,8 @@ def mock_subreddit(client_app, login_test_user) -> dict:
         return response.json
 
 
-@pytest.fixture()
-def mock_post(client_app, login_test_user, mock_subreddit):
+@pytest.fixture(autouse=True)
+def mock_post(client_app, login_test_user, mock_subreddit) -> dict:
     mock_post = dict(title="Test Post", text="Test Post", subreddit_id=1)
 
     with client_app as test_client:
