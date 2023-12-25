@@ -12,6 +12,7 @@ from .schemas import (
     PostViewSchema,
     SubredditViewSchema,
     UserProfileViewSchema,
+    UserViewSchema,
 )
 
 user = Blueprint("user", __name__)
@@ -24,13 +25,14 @@ def get_profile():
         profile = User.query.filter_by(username=current_user.username).first()
 
         if profile:
+            profile_schema = UserViewSchema.from_orm(profile)
             subreddits_schema = AllSubredditsViewSchema(
                 subreddits=[
                     SubredditViewSchema(
                         name=subreddit.name,
                         description=subreddit.description,
                         id=subreddit.id,
-                        user=None,
+                        user=profile_schema,
                         created_on=subreddit.created_on,
                     )
                     for subreddit in Subreddit.query.filter(
@@ -47,7 +49,7 @@ def get_profile():
                         title=post.title,
                         text=post.text,
                         votes=post.votes,
-                        user=None,
+                        user=profile_schema,
                         comments=None,
                         created_on=post.created_on,
                     )
