@@ -13,7 +13,7 @@ class Comments(db.Model, CRUDMixin):
 
     comment = db.Column(db.String(1000), nullable=False, unique=False)
     votes = db.Column(db.Integer, default=1, nullable=False)
-    created_on = db.Column(db.DateTime, default=pendulum.now, nullable=False)
+    created_on = db.Column(db.DateTime(timezone=True), default=pendulum.now, nullable=False)
 
     # Foreign Keys
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)

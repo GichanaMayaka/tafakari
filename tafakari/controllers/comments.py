@@ -13,6 +13,7 @@ from .schemas import CommentRequestSchema
 comments = Blueprint("comments", __name__)
 
 
+# TODO: Create a get comments by user id endpoint for display on profile
 @comments.route("/posts/<int:post_id>/comments", methods=["POST"])
 @limiter.limit("100/day")
 @validate(body=CommentRequestSchema)

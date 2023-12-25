@@ -14,7 +14,7 @@ class Subreddit(db.Model, CRUDMixin):
     __tablename__ = "subreddit"
     name = db.Column(db.String(120), nullable=False, unique=True)
     description = db.Column(db.String(240), nullable=False, unique=False)
-    created_on = db.Column(db.DateTime, default=pendulum.now, nullable=False)
+    created_on = db.Column(db.DateTime(timezone=True), default=pendulum.now, nullable=False)
 
     # Foreign Keys
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

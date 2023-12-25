@@ -20,7 +20,7 @@ class User(db.Model, CRUDMixin):
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String, nullable=False)
     cake_day = db.Column(
-        db.DateTime, default=pendulum.now, nullable=False
+        db.DateTime(timezone=True), default=pendulum.now, nullable=False
     )  # date of joining
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
 
