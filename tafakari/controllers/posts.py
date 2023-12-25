@@ -182,7 +182,7 @@ def get_post_by_id(post_id: int):
 @jwt_required(fresh=True)
 def upvote_a_post(post_id: int):
     # TODO: Make up-votes unique per user
-    post = Post.get_by_id(post_id).first()
+    post = Post.get_by_id(post_id)
 
     if post and current_user:
         post.update(votes=post.votes + 1)

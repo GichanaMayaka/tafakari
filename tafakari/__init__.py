@@ -22,9 +22,9 @@ from ..configs import configs
 
 
 def create_app(
-        database_uri: str = SQLALCHEMY_DATABASE_URI,
-        configurations: object = configs,
-        additional_binds: dict = None,
+    database_uri: str = SQLALCHEMY_DATABASE_URI,
+    configurations: object = configs,
+    additional_binds: dict = None,
 ) -> Flask:
     """Application Factory"""
     app = Flask(__name__)
@@ -51,7 +51,7 @@ def create_app(
     @app.route("/ping", methods=["GET"])
     @limiter.exempt
     def ping():
-        return "PONG"
+        return "PONG! \nWelcome to tafakari", 200
 
     @app.after_request
     def set_headers(response):
