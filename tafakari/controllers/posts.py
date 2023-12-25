@@ -140,7 +140,7 @@ def get_post_by_id(post_id: int):
         post_creator = User.get_by_id(post.created_by)
         subreddit = Subreddit.get_by_id(post.belongs_to)
         all_post_comments = Comments.query.filter(
-            and_(Comments.user_id == post.created_by, Comments.post_id == post.id)
+            and_(Comments.post_id == post.id)
         ).all()
 
         if post_creator:
