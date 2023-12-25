@@ -4,7 +4,8 @@ from tafakari.tafakari.models.subreddit import Subreddit
 from tafakari.tafakari.models.users import User, check_password
 
 
-def test_user_model():
+def test_user_model() -> None:
+    """Tests the User Model"""
     user = User.create(
         username="Tester",
         email="tester@email.co.ke",
@@ -19,7 +20,8 @@ def test_user_model():
     user.delete()
 
 
-def test_subreddit_model():
+def test_subreddit_model() -> None:
+    """Tests the Subreddit Model"""
     subreddit = Subreddit.create(
         name="Subreddit Test", description="Subreddit Test", created_by=1
     )
@@ -31,7 +33,12 @@ def test_subreddit_model():
     subreddit.delete()
 
 
-def test_post_model(mock_subreddit):
+def test_post_model(mock_subreddit: dict) -> None:
+    """Tests the Post Model
+
+    Args:
+        mock_subreddit (dict): Dummy Subreddit Record
+    """
     post = Post.create(
         title="Post Test", text="Post Test", votes=10, created_by=1, belongs_to=1
     )
@@ -45,7 +52,12 @@ def test_post_model(mock_subreddit):
     post.delete()
 
 
-def test_comments_model(mock_post):
+def test_comments_model(mock_post: dict) -> None:
+    """Tests the Comment Model
+
+    Args:
+        mock_post (dict): Dummy Post Record
+    """
     comment = Comments.create(comment="Post Comment", votes=-100, user_id=1, post_id=1)
 
     assert comment.user_id == 1

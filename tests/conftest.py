@@ -34,7 +34,12 @@ def client_app(app: Flask) -> FlaskClient:
 
 
 @pytest.fixture()
-def register_test_user(client_app) -> None:
+def register_test_user(client_app: FlaskClient) -> None:
+    """Registers a test user
+
+    Args:
+        client_app (FlaskClient): The Flask Test Client
+    """
     with client_app as test_client:
         test_client.post(
             "/auth/register",

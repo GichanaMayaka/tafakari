@@ -70,7 +70,7 @@ def login(body: UserRequestSchema):
             jsonify(
                 message="No user registered with those credentials. Please register to begin"
             ),
-            HTTPStatus.UNAUTHORIZED,
+            HTTPStatus.FORBIDDEN,
         )
 
     return jsonify(message="Incorrect Credentials"), HTTPStatus.UNAUTHORIZED
@@ -113,7 +113,7 @@ def register(body: UserRequestSchema):
 
         return UserViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
 
-    except exc.IntegrityError as exception:
+    except exc.IntegrityError:
         return (
             jsonify(message="A user with the same credentials is registered."),
             HTTPStatus.CONFLICT,
