@@ -41,6 +41,13 @@ class CommentViewSchema(CommentRequestSchema):
     votes: int
     created_on: datetime.datetime
     user: UserViewSchema
+    post_id: Optional[int]
+
+
+class AllCommentsViewSchema(BaseTafakariSchema):
+    """All Comments Response Schema"""
+
+    comments: Optional[list[CommentViewSchema]]
 
 
 class CreatePostRequestSchema(BaseTafakariSchema):
@@ -96,3 +103,4 @@ class UserProfileViewSchema(UserViewSchema):
     email: str
     subreddits: Optional[AllSubredditsViewSchema]
     posts: Optional[AllPostsViewSchema]
+    comments: Optional[AllCommentsViewSchema]

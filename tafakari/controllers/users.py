@@ -3,12 +3,15 @@ from http import HTTPStatus
 from flask import Blueprint, jsonify
 from flask_jwt_extended import current_user, jwt_required
 
+from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
 from .schemas import (
+    AllCommentsViewSchema,
     AllPostsViewSchema,
     AllSubredditsViewSchema,
+    CommentViewSchema,
     PostViewSchema,
     SubredditViewSchema,
     UserProfileViewSchema,
@@ -57,6 +60,20 @@ def get_profile():
                 ]
             )
 
+            comments_schema = AllCommentsViewSchema(
+                comments=[
+                    CommentViewSchema(
+                        comment=comment.comment,
+                        id=comment.id,
+                        votes=comment.votes,
+                        created_on=comment.created_on,
+                        user=profile_schema,
+                        post_id=comment.post_id,
+                    )
+                    for comment in Comments.query.filter(Comments.user_id == profile.id)
+                ]
+            )
+
             response = UserProfileViewSchema(
                 id=profile.id,
                 username=profile.username,
@@ -64,6 +81,7 @@ def get_profile():
                 email=profile.email,
                 subreddits=subreddits_schema,
                 posts=posts_schema,
+                comments=comments_schema,
             ).dict(exclude_unset=True, exclude_none=True)
 
             return response, HTTPStatus.OK
