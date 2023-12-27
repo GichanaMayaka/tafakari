@@ -1,0 +1,449 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "tafakari - A Simple Reddit Clone",
+  "dateExported": "2023-12-27T13:31:06.611Z",
+  "version": "1.1",
+  "folders": [
+    {
+      "_id": "d02b3ce0-4468-44c7-8ce1-18ffe9e6dbb3",
+      "name": "authentications",
+      "containerId": "",
+      "created": "2023-08-14T06:18:28.852Z",
+      "sortNum": 10000
+    },
+    {
+      "_id": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "subreddits",
+      "containerId": "",
+      "created": "2023-08-14T06:18:28.854Z",
+      "sortNum": 20000
+    },
+    {
+      "_id": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "posts",
+      "containerId": "",
+      "created": "2023-08-14T06:18:28.855Z",
+      "sortNum": 30000
+    },
+    {
+      "_id": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
+      "name": "comments",
+      "containerId": "",
+      "created": "2023-08-14T06:18:28.856Z",
+      "sortNum": 40000
+    },
+    {
+      "_id": "93deae00-1f98-4dbf-a013-9bece7de5b4a",
+      "name": "user profiles",
+      "containerId": "",
+      "created": "2023-08-14T06:18:28.857Z",
+      "sortNum": 50000
+    }
+  ],
+  "requests": [
+    {
+      "_id": "42565898-3efe-42e7-a555-e5384887a9d2",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "d02b3ce0-4468-44c7-8ce1-18ffe9e6dbb3",
+      "name": "login",
+      "url": "/auth/login",
+      "method": "POST",
+      "sortNum": 10000,
+      "created": "2023-08-14T06:18:28.853Z",
+      "modified": "2023-12-26T07:08:27.466Z",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n    \"username\": \"jusline\",\n    \"email\": \"jusline@gmail.com\",\n    \"password\": \"password\"\n}",
+        "form": []
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "custom": "",
+          "action": "equal",
+          "value": "202"
+        },
+        {
+          "type": "set-env-var",
+          "custom": "json.access_token",
+          "action": "setto",
+          "value": "{{access_token}}"
+        }
+      ]
+    },
+    {
+      "_id": "b7aa8a13-54cc-4a58-bd6a-16c5a18d0216",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "d02b3ce0-4468-44c7-8ce1-18ffe9e6dbb3",
+      "name": "logout",
+      "url": "/auth/logout",
+      "method": "DELETE",
+      "sortNum": 20000,
+      "created": "2023-08-14T06:18:28.854Z",
+      "modified": "2023-12-25T07:09:01.994Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "9bf17d25-ba85-4b55-92d3-239cb849896d",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "d02b3ce0-4468-44c7-8ce1-18ffe9e6dbb3",
+      "name": "register",
+      "url": "{{tafakari}}/auth/register",
+      "method": "POST",
+      "sortNum": 30000,
+      "created": "2023-08-14T06:18:28.855Z",
+      "modified": "2023-12-25T20:12:08.920Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "username",
+          "value": "gichana",
+          "isDisabled": true,
+          "isPath": false
+        },
+        {
+          "name": "email",
+          "value": "gichana@email.com",
+          "isDisabled": true,
+          "isPath": false
+        },
+        {
+          "name": "password",
+          "value": "password",
+          "isDisabled": true,
+          "isPath": false
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"username\": \"jusline\",\n  \"email\": \"jusline@gmail.com\",\n  \"password\": \"password\"\n}",
+        "form": []
+      },
+      "tests": [
+        {
+          "type": "res-code",
+          "custom": "",
+          "action": "equal",
+          "value": "201"
+        }
+      ]
+    },
+    {
+      "_id": "622360ec-ff8c-4860-a14e-88b55a2ede6f",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "create subreddit",
+      "url": "{{tafakari}}/subreddits",
+      "method": "POST",
+      "sortNum": 40000,
+      "created": "2023-08-14T06:18:28.856Z",
+      "modified": "2023-12-25T20:05:40.657Z",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n    \"name\": \"Software Development\",\n    \"description\": \"All about Software Development\"\n}",
+        "form": []
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "5d142ed6-acb2-47a2-bea7-78a43621bf66",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "join a subreddit",
+      "url": "{{tafakari}}/join/subreddits/1",
+      "method": "GET",
+      "sortNum": 50000,
+      "created": "2023-08-14T06:18:28.857Z",
+      "modified": "2023-12-25T06:56:08.347Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "f31a403b-9b68-4fc5-8ac6-fbb17a7f165d",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "get subreddit by id",
+      "url": "{{tafakari}}/subreddits/1",
+      "method": "GET",
+      "sortNum": 60000,
+      "created": "2023-08-14T06:18:28.858Z",
+      "modified": "2023-12-27T12:51:15.354Z",
+      "headers": [],
+      "params": [
+        {
+          "name": "id",
+          "value": "",
+          "isDisabled": true,
+          "isPath": false
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "88ce3af6-c745-4627-aa0f-fe0e273a6c50",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "get all subreddits",
+      "url": "{{tafakari}}/subreddits",
+      "method": "GET",
+      "sortNum": 70000,
+      "created": "2023-08-14T06:18:28.859Z",
+      "modified": "2023-12-25T06:55:10.661Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "4fb4b5aa-8dcd-425d-ae92-689e67f6cf18",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "delete a subreddit",
+      "url": "{{url}}/subreddits/6",
+      "method": "DELETE",
+      "sortNum": 80000,
+      "created": "2023-08-14T06:18:28.860Z",
+      "modified": "2023-08-14T06:18:28.860Z",
+      "headers": [],
+      "body": {
+        "type": "json",
+        "raw": "{\r\n    \"username\": \"gichana\",\r\n    \"email\": \"gichana@email.com\",\r\n    \"password\": \"password\"\r\n}"
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{jwt}}"
+      }
+    },
+    {
+      "_id": "45fc0a78-a40a-4f15-a7db-6ddd2b78eb2d",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "create a post",
+      "url": "{{tafakari}}/posts",
+      "method": "POST",
+      "sortNum": 90000,
+      "created": "2023-08-14T06:18:28.861Z",
+      "modified": "2023-12-27T11:27:00.437Z",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"subreddit_id\": 1,\n  \"title\": \"Winslow Homer paintings\",\n  \"text\": \"I love Winslow Homer's watercolour paintings\"\n}",
+        "form": []
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "9d8b31e7-7920-48c7-a614-6e59723fc95f",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "get all posts in a subreddit",
+      "url": "{{tafakari}}/subreddits/2/posts",
+      "method": "GET",
+      "sortNum": 100000,
+      "created": "2023-08-14T06:18:28.862Z",
+      "modified": "2023-12-27T13:10:29.261Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "1f114b88-0a28-4926-a50b-870a1bdfa7d7",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "vote a post (upvote)",
+      "url": "{{tafakari}}/posts/1/upvote",
+      "method": "GET",
+      "sortNum": 110000,
+      "created": "2023-08-14T06:18:28.863Z",
+      "modified": "2023-12-25T07:00:57.311Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "849ed67c-1206-4cb9-9d7f-a60d4cb96332",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "vote a post (downvote)",
+      "url": "{{url}}/posts/2/downvote",
+      "method": "GET",
+      "sortNum": 120000,
+      "created": "2023-08-14T06:18:28.864Z",
+      "modified": "2023-08-14T06:18:28.864Z",
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{jwt}}"
+      }
+    },
+    {
+      "_id": "98ddce24-c3f1-4975-b928-2897bef5a648",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "get post by id",
+      "url": "{{tafakari}}/posts/7",
+      "method": "GET",
+      "sortNum": 130000,
+      "created": "2023-08-14T06:18:28.865Z",
+      "modified": "2023-12-27T13:12:03.681Z",
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "1b2f439a-f604-4357-afe5-a42f6f9f7940",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "get all posts",
+      "url": "{{tafakari}}/posts",
+      "method": "GET",
+      "sortNum": 140000,
+      "created": "2023-08-14T06:18:28.866Z",
+      "modified": "2023-12-25T07:04:19.088Z",
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "de91c3d5-8805-4bd3-8799-f86aeebef9e8",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
+      "name": "add a comment to a post",
+      "url": "{{url}}/posts/2/comments",
+      "method": "POST",
+      "sortNum": 150000,
+      "created": "2023-08-14T06:18:28.867Z",
+      "modified": "2023-08-14T06:18:28.867Z",
+      "headers": [],
+      "body": {
+        "type": "json",
+        "raw": "{\r\n    \"comment\": \"Me too, he is someone who really took watercolour painting seriously\"\r\n}"
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{jwt}}"
+      }
+    },
+    {
+      "_id": "98a12429-d2cf-459f-ba62-5272adf1c304",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
+      "name": "vote a comment (upvote)",
+      "url": "{{url}}/posts/1/comments/1/upvote",
+      "method": "GET",
+      "sortNum": 160000,
+      "created": "2023-08-14T06:18:28.868Z",
+      "modified": "2023-08-14T06:18:28.868Z",
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{jwt}}"
+      }
+    },
+    {
+      "_id": "fd64af33-af19-49ed-9a46-7dc23bd6b995",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
+      "name": "vote a comment (downvote)",
+      "url": "{{url}}/posts/1/comments/1/downvote",
+      "method": "GET",
+      "sortNum": 170000,
+      "created": "2023-08-14T06:18:28.869Z",
+      "modified": "2023-08-14T06:18:28.869Z",
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{jwt}}"
+      }
+    },
+    {
+      "_id": "e3748cbf-f99f-4c68-ab9b-f84b0c0d8887",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
+      "name": "delete a comment to a post",
+      "url": "{{url}}/posts/1/comments/10",
+      "method": "DELETE",
+      "sortNum": 180000,
+      "created": "2023-08-14T06:18:28.870Z",
+      "modified": "2023-08-14T06:18:28.870Z",
+      "headers": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{jwt}}"
+      }
+    },
+    {
+      "_id": "50e1c0d8-7056-4f28-8522-69f0b85045b2",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "93deae00-1f98-4dbf-a013-9bece7de5b4a",
+      "name": "view user profile",
+      "url": "/profile",
+      "method": "GET",
+      "sortNum": 190000,
+      "created": "2023-08-14T06:18:28.871Z",
+      "modified": "2023-12-25T07:05:11.623Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "79671617-687b-4d49-86fe-7b6f8f9496d6",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "",
+      "name": "home",
+      "url": "/ping",
+      "method": "GET",
+      "sortNum": 200000,
+      "created": "2023-08-14T06:18:28.872Z",
+      "modified": "2023-12-25T07:13:17.465Z",
+      "headers": [],
+      "params": [],
+      "tests": []
+    }
+  ],
+  "settings": {
+    "options": {
+      "baseUrl": "http://localhost:8000"
+    },
+    "envId": "6399277d-c0b3-43ca-bf19-7920e5f83608"
+  }
+}

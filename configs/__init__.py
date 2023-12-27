@@ -7,6 +7,7 @@ from pydantic import BaseSettings, PostgresDsn
 
 class DevConfig(BaseSettings):
     """Development configurations."""
+
     POSTGRES_DSN: PostgresDsn
 
     SESSION_TYPE: str
@@ -23,6 +24,8 @@ class DevConfig(BaseSettings):
     CACHE_DEFAULT_TIMEOUT: int
 
     class Config:
+        """Class Configuration"""
+
         env_file = ".env"
         env_file_encoding = "utf-8"
         env_prefix: Final[str] = "DEV_"
@@ -30,9 +33,12 @@ class DevConfig(BaseSettings):
 
 class ProdConfig(DevConfig):
     """Production configurations."""
+
     DEBUG: Final[bool] = False
 
     class Config:
+        """Class Configuration"""
+
         env_prefix: Final[str] = "PROD_"
 
 
@@ -40,10 +46,17 @@ class TestConfig(DevConfig):
     TESTING: Final[bool] = True
 
     class Config:
+        """Class Configuration"""
+
         env_prefix: Final[str] = "TEST_"
 
 
-def factory():
+def factory() -> DevConfig | TestConfig | ProdConfig:
+    """Configuration Factory function
+
+    Returns:
+        DevConfig | TestConfig | ProdConfig: Configurations
+    """
     env = os.environ.get("ENV", "dev")
 
     development = DevConfig()
@@ -52,12 +65,13 @@ def factory():
 
     env = env.lower()
 
-    if env == "dev":
-        return development
+    if env == "prod":
+        return production
     elif env == "test":
         return testing
-    elif env == "prod":
-        return production
+    else:
+        # if env is prod
+        return development
 
 
 configs = factory()

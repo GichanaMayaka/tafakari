@@ -1,7 +1,8 @@
 import os
 
-from flask import Flask
+from flask import Flask, Response
 
+from ..configs import configs
 from .commands import (
     create_db,
     create_tables,
@@ -18,7 +19,6 @@ from .controllers.subreddits import subreddits
 from .controllers.users import user
 from .database import SQLALCHEMY_DATABASE_URI, db
 from .extensions import bcrypt, cache, cors, jwt, limiter, migrations
-from ..configs import configs
 
 
 def create_app(
@@ -26,7 +26,16 @@ def create_app(
     configurations: object = configs,
     additional_binds: dict = None,
 ) -> Flask:
-    """Application Factory"""
+    """Application Factory
+
+    Args:
+        database_uri (str, optional): Database URI. Defaults to SQLALCHEMY_DATABASE_URI.
+        configurations (object, optional): Configurations. Defaults to configs.
+        additional_binds (dict, optional): Additional Binds. Defaults to None.
+
+    Returns:
+        Flask: Flask App Object
+    """
     app = Flask(__name__)
     app.config.from_object(configurations)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
@@ -54,7 +63,15 @@ def create_app(
         return "PONG! \nWelcome to tafakari", 200
 
     @app.after_request
-    def set_headers(response):
+    def set_headers(response: Response) -> Response:
+        """Sets Headers on each response
+
+        Args:
+            response (Response): The Response Object
+
+        Returns:
+            Response: The Response with headers set
+        """
         response.headers["Access-Control-Allowed-Methods"] = "GET, POST, DELETE, PUT"
         response.headers["Content-Type"] = "application/json"
         response.headers["Cache-Control"] = "no-cache"
@@ -64,18 +81,34 @@ def create_app(
 
 
 def register_extensions(app: Flask) -> None:
-    """Register application's extensions"""
+    """Register application's extensions
+
+    Args:
+        app (Flask): The Flask App Object
+    """
     db.init_app(app=app)
     bcrypt.init_app(app=app)
     jwt.init_app(app=app)
-    cache.init_app(app=app, config={"CACHE_TYPE": configs.CACHE_TYPE})
+    cache.init_app(
+        app=app,
+        config={
+            "CACHE_KEY_PREFIX": "tafakari_",
+            "DEBUG": configs.DEBUG,
+            "CACHE_TYPE": configs.CACHE_TYPE,
+            "CACHE_DEFAULT_TIMEOUT": configs.CACHE_DEFAULT_TIMEOUT,
+        },
+    )
     cors.init_app(app=app)
     migrations.init_app(app=app, db=db)
     limiter.init_app(app=app)
 
 
 def register_commands(app: Flask) -> None:
-    """Register application's terminal/CLI commands"""
+    """Register application's terminal/CLI commands
+
+    Args:
+        app (Flask): The Flask App Object
+    """
     for command in [
         create_db,
         drop_db,
@@ -89,7 +122,11 @@ def register_commands(app: Flask) -> None:
 
 
 def register_blueprints(app: Flask) -> None:
-    """Register application's routes Blueprints"""
+    """Register application's routes Blueprints
+
+    Args:
+        app (Flask): The Flask App Object
+    """
     app.register_blueprint(blueprint=user)
     app.register_blueprint(blueprint=subreddits)
     app.register_blueprint(blueprint=posts)
