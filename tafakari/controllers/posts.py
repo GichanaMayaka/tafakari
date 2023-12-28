@@ -6,7 +6,8 @@ from flask_jwt_extended import current_user, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_
 
-from ...configs import configs
+from tafakari.configs import configs
+
 from ..extensions import cache, limiter
 from ..models.comments import Comments
 from ..models.posts import Post

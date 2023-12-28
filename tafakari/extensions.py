@@ -6,7 +6,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 
-from ..configs import configs
+from tafakari.configs import configs
 
 bcrypt = Bcrypt()
 jwt = JWTManager()

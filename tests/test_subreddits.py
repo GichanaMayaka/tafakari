@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-import pytest
-
 
 def set_authorization_token(token: str) -> dict:
     """Sets valid access token headers

@@ -7,7 +7,8 @@ from flask_pydantic import validate
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
-from ...configs import configs
+from tafakari.configs import configs
+
 from ..extensions import cache, limiter
 from ..models.subreddit import Subreddit
 from ..models.users import User

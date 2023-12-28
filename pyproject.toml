@@ -25,6 +25,7 @@ flask-caching = "^2.0.2"
 flask-migrate = "^4.0.4"
 flask-limiter = { extras = ["redis"], version = "^3.5.0" }
 flask-cors = "^4.0.0"
+psycopg2-binary = "^2.9.9"
 
 
 [build-system]

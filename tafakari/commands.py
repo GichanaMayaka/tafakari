@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.mock import MockConnection
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from ..configs import configs
+from tafakari.configs import configs
+
 from .database import SQLALCHEMY_DATABASE_URI, db
 from .models.users import User
 
@@ -36,7 +37,7 @@ def create_db(uri: str = SQLALCHEMY_DATABASE_URI) -> None:
 
 
 def create_tables(database: SQLAlchemy = db) -> None:
-    """Creates Database Tables. Can be replaced with flask migrate
+    """Creates Database Tables. Can be replaced with flask migrate's commands
 
     Args:
         database (SQLAlchemy, optional): SQLAlchemy Database Object. Defaults to db

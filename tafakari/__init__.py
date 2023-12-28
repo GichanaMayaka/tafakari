@@ -2,7 +2,8 @@ import os
 
 from flask import Flask, Response
 
-from ..configs import configs
+from tafakari.configs import configs
+
 from .commands import (
     create_db,
     create_tables,

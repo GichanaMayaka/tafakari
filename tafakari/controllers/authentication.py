@@ -8,10 +8,11 @@ from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_, exc
 
-from .schemas import UserRequestSchema, UserViewSchema
+from tafakari.configs import configs
+
 from ..extensions import jwt, limiter
 from ..models.users import User, check_password
-from ...configs import configs
+from .schemas import UserRequestSchema, UserViewSchema
 
 authentications = Blueprint("authentication", __name__, url_prefix="/auth")
 
