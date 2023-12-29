@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export ENV=prod
 export FLASK_APP=tafakari
 flask create-db
 flask db upgrade

@@ -93,6 +93,8 @@ def register_extensions(app: Flask) -> None:
     cache.init_app(
         app=app,
         config={
+            "CACHE_REDIS_HOST": configs.REDIS_HOSTNAME,
+            "CACHE_REDIS_PORT": configs.REDIS_PORT,
             "CACHE_KEY_PREFIX": "tafakari_",
             "DEBUG": configs.DEBUG,
             "CACHE_TYPE": configs.CACHE_TYPE,
