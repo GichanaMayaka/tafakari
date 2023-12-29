@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "tafakari"
 version = "0.1.0"
-description = ""
+description = "A simple Reddit clone backend built using Python, Flask, PostgreSQL, and Redis"
 authors = ["Gichana <gichanamayaka@gmail.com>"]
 readme = "README.md"
 
@@ -26,8 +26,9 @@ flask-migrate = "^4.0.4"
 flask-limiter = { extras = ["redis"], version = "^3.5.0" }
 flask-cors = "^4.0.0"
 psycopg2-binary = "^2.9.9"
+gunicorn = "^21.2.0"
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.3.2"]
 build-backend = "poetry.core.masonry.api"

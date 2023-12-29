@@ -1,0 +1,72 @@
+version: "3.8"
+
+networks:
+  tafakari-net:
+    driver: bridge
+
+services:
+  tafakari-db:
+    container_name: tafakari-db
+    image: postgres:15.5-bullseye
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - tafakari-net
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+
+  redis-cache:
+    container_name: redis-cache
+    image: redis:latest
+    environment:
+      - REDIS_HOSTNAME=${PROD_REDIS_HOSTNAME}
+      - REDIS_PORT=${PROD_REDIS_PORT}
+    networks:
+      - tafakari-net
+    ports:
+      - "6379:6379"
+    env_file:
+      - .env
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    depends_on:
+      - tafakari-db
+    ports:
+      - "8080:8080"
+    networks:
+      - tafakari-net
+
+  web:
+    build:
+      dockerfile: Dockerfile
+    image: tafakari:latest
+    container_name: tafakari
+    volumes:
+      - ./:/usr/src/app/tafakari
+    depends_on:
+      - tafakari-db
+      - redis-cache
+    ports:
+      - "8000:80"
+    env_file:
+      - .env
+    networks:
+      - tafakari-net
+
+  reverse-proxy:
+    image: nginx:stable-perl
+    container_name: reverse-proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - tafakari-net

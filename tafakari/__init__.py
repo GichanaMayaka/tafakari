@@ -25,7 +25,7 @@ from .extensions import bcrypt, cache, cors, jwt, limiter, migrations
 def create_app(
     database_uri: str = SQLALCHEMY_DATABASE_URI,
     configurations: object = configs,
-    additional_binds: dict = None,
+    additional_binds: dict | None = None,
 ) -> Flask:
     """Application Factory
 
