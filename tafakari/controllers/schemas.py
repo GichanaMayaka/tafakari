@@ -88,7 +88,7 @@ class SubredditViewSchema(CreateSubredditRequestSchema):
     """Subreddit Response Schema"""
 
     id: int
-    user: Optional[UserViewSchema]
+    members: Optional[list[UserViewSchema]]
     created_on: datetime.datetime
 
 

@@ -96,6 +96,7 @@ def register_extensions(app: Flask) -> None:
             "CACHE_REDIS_HOST": configs.REDIS_HOSTNAME,
             "CACHE_REDIS_PORT": configs.REDIS_PORT,
             "CACHE_KEY_PREFIX": "tafakari_",
+            "CACHE_REDIS_DB": 1,
             "DEBUG": configs.DEBUG,
             "CACHE_TYPE": configs.CACHE_TYPE,
             "CACHE_DEFAULT_TIMEOUT": configs.CACHE_DEFAULT_TIMEOUT,

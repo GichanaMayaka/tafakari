@@ -33,7 +33,7 @@ def test_subreddit_model() -> None:
     subreddit.delete()
 
 
-def test_post_model(mock_subreddit: dict) -> None:
+def test_post_model(create_mock_subreddit: dict) -> None:
     """Tests the Post Model
 
     Args:
@@ -52,7 +52,7 @@ def test_post_model(mock_subreddit: dict) -> None:
     post.delete()
 
 
-def test_comments_model(mock_post: dict) -> None:
+def test_comments_model(create_mock_post: dict) -> None:
     """Tests the Comment Model
 
     Args:

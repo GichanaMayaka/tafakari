@@ -18,5 +18,5 @@ limiter = Limiter(
     storage_uri=f"redis://{configs.REDIS_HOSTNAME}:{configs.REDIS_PORT}",
     storage_options={"socket_connect_timeout": 30},
     strategy="fixed-window",
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["2000 per day", "150 per hour"],
 )

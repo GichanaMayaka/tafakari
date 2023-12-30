@@ -50,6 +50,7 @@ def create_subreddit_post(body: CreatePostRequestSchema) -> tuple[Response, int]
         cache.set(
             f"post_{new_post.id}", new_post, timeout=configs.CACHE_DEFAULT_TIMEOUT
         )
+        cache.delete(f"{current_user.username}_profile")
         return (
             jsonify(message=f"Post {new_post.title} created", timestamp=pendulum.now()),
             HTTPStatus.CREATED,
@@ -258,6 +259,9 @@ def upvote_a_post(post_id: int) -> tuple[Response, int]:
     if post and current_user:
         post.update(votes=post.votes + 1)
 
+        cache.delete("all_posts")
+        cache.delete(f"post_{post_id}")
+        cache.delete(f"{current_user.username}_profile")
         return jsonify(message="Up-voted Successfully"), HTTPStatus.ACCEPTED
 
     return jsonify(message="The post you selected does not exist"), HTTPStatus.NOT_FOUND
@@ -281,6 +285,9 @@ def downvote_a_post(post_id: int) -> tuple[Response, int]:
     if post and current_user:
         post.update(votes=post.votes - 1)
 
+        cache.delete("all_posts")
+        cache.delete(f"post_{post_id}")
+        cache.delete(f"{current_user.username}_profile")
         return jsonify(message="Down-voted Successfully"), HTTPStatus.ACCEPTED
 
     return jsonify(message="The post you selected does not exist"), HTTPStatus.NOT_FOUND

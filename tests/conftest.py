@@ -61,7 +61,7 @@ def login_test_user(client_app: FlaskClient, register_test_user) -> str:
 
 
 @pytest.fixture(autouse=True)
-def mock_subreddit(client_app, login_test_user) -> dict:
+def create_mock_subreddit(client_app, login_test_user) -> dict:
     mock_subreddit = dict(name="Test Subreddit", description="This is a test Subreddit")
 
     with client_app as test_client:
@@ -80,7 +80,7 @@ def mock_subreddit(client_app, login_test_user) -> dict:
 
 
 @pytest.fixture(autouse=True)
-def mock_post(client_app, login_test_user, mock_subreddit) -> dict:
+def create_mock_post(client_app, login_test_user, create_mock_subreddit) -> dict:
     mock_post = dict(title="Test Post", text="Test Post", subreddit_id=1)
 
     with client_app as test_client:
