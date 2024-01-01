@@ -15,7 +15,7 @@ services:
     networks:
       - tafakari-net
     ports:
-      - "5432:5432"
+      - "5432"
 
   redis-cache:
     container_name: redis-cache
@@ -23,7 +23,7 @@ services:
     networks:
       - tafakari-net
     ports:
-      - "6379:6379"
+      - "6379"
 
   adminer:
     image: adminer:latest

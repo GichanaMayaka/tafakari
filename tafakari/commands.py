@@ -112,6 +112,7 @@ def recreate_db() -> None:
 
 
 def drop_db() -> None:
+    """Drops the current database"""
     engine = database_engine(uri=SQLALCHEMY_DATABASE_URI)
     if database_exists(engine.url):
         drop_database(engine.url)

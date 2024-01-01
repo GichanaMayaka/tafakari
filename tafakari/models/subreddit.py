@@ -37,10 +37,10 @@ class Subreddit(db.Model, CRUDMixin):
 
     @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
     def get_members(self) -> list[UserViewSchema]:
-        """Returns all Members in the User relationship
+        """Returns all Members in a Subreddit
 
         Returns:
-            list[User]: All Users
+            list[UserViewSchema]: All Users that are members of this Subreddit
         """
         all_members = []
         for member in self.user:

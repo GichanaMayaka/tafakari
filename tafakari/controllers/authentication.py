@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 import pendulum
 import redis
-from flask import Blueprint, jsonify
+from flask import Blueprint, Response, jsonify
 from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_, exc
@@ -44,10 +44,20 @@ def add_additional_claims(identity: Any):
     return dict(exp=pendulum.now() + configs.JWT_ACCESS_TOKEN_EXPIRES)
 
 
+# TODO: Implement delete/deactivate profile as well as update profile
+# TODO: Implement profile picture uploads
 @authentications.route("/login", methods=["POST"])
 @limiter.limit("3/minute")
 @validate(body=UserRequestSchema)
-def login(body: UserRequestSchema):
+def login(body: UserRequestSchema) -> tuple[Response, int]:
+    """Signs in using details supplied in the body parameter
+
+    Args:
+        body (UserRequestSchema): The Request Details in JSON format
+
+    Returns:
+        tuple[Response, int]: The Response Object and Status Code
+    """
     user = User.query.filter(
         and_(
             User.username == body.username,
@@ -80,7 +90,12 @@ def login(body: UserRequestSchema):
 @authentications.route("/logout", methods=["DELETE"])
 @jwt_required(fresh=True)
 @limiter.exempt
-def logout():
+def logout() -> tuple[Response, int]:
+    """Signs out the current user
+
+    Returns:
+        tuple[Response, int]: The Response Object and Status Code
+    """
     jti = get_jwt()["jti"]
     jwt_redis_blocklist.set(jti, "", ex=configs.JWT_ACCESS_TOKEN_EXPIRES)
     return jsonify(message="Access token revoked"), HTTPStatus.OK
@@ -88,7 +103,15 @@ def logout():
 
 @authentications.route("/register", methods=["POST"])
 @validate(body=UserRequestSchema)
-def register(body: UserRequestSchema):
+def register(body: UserRequestSchema) -> tuple[Response, int]:
+    """Registers a User based on the supplied details
+
+    Args:
+        body (UserRequestSchema): The Request details in JSON format
+
+    Returns:
+        tuple[Response, int]: The Response Object and Status Code
+    """
     existing_user = User.query.filter(
         and_(User.username == body.username, User.email == body.email)
     ).first()
@@ -105,14 +128,14 @@ def register(body: UserRequestSchema):
         )
         new_user.save()
 
-        return UserViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
+        return jsonify(UserViewSchema.from_orm(new_user).dict()), HTTPStatus.CREATED
 
     try:
         new_user = User.create(
             username=body.username, email=body.email, password=body.password
         )
 
-        return UserViewSchema.from_orm(new_user).dict(), HTTPStatus.CREATED
+        return jsonify(UserViewSchema.from_orm(new_user).dict()), HTTPStatus.CREATED
 
     except exc.IntegrityError:
         return (

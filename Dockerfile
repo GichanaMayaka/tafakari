@@ -3,6 +3,7 @@ FROM  python:3.10.6-slim-bullseye
 ARG ENV
 
 ENV ENV=${ENV} \
+    FLASK_APP=tafakari \
     PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONHASHSEED=random \

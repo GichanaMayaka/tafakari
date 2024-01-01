@@ -3,6 +3,11 @@
 Dockerfile*
 .gitignore
 
+.env
+.env.test
+.env.example
+.env.prod.example
+
 /.git/
 /.venv/
 /.vscode/

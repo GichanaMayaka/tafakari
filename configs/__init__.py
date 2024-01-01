@@ -5,8 +5,12 @@ from typing import Final
 from pydantic import BaseSettings, PostgresDsn
 
 
-class DevConfig(BaseSettings):
-    """Development configurations."""
+class BaseConfigs(BaseSettings):
+    """Base Configurations for tafakari parsed from a .env.* file
+
+    Args:
+        BaseSettings (Any): Base Class
+    """
 
     POSTGRES_DSN: PostgresDsn
 
@@ -14,41 +18,51 @@ class DevConfig(BaseSettings):
 
     SECRET_KEY: str
     JWT_ALGORITHM: Final[str] = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRES: Final[datetime.timedelta] = datetime.timedelta(minutes=30)
+    JWT_ACCESS_TOKEN_EXPIRES: datetime.timedelta = datetime.timedelta(minutes=30)
 
     REDIS_HOSTNAME: str
     REDIS_PORT: int
-    DEBUG: Final[bool] = True
+    DEBUG: bool = True
 
-    CACHE_TYPE: Final[str] = "RedisCache"
+    CACHE_TYPE: str = "RedisCache"
     CACHE_DEFAULT_TIMEOUT: int
 
+    TESTING: bool = False
+
     class Config:
-        """Class Configuration"""
+        """Environment Configuration"""
 
         env_file = ".env"
         env_file_encoding = "utf-8"
-        env_prefix: Final[str] = "DEV_"
 
 
-class ProdConfig(DevConfig):
+class DevConfig(BaseConfigs):
+    """Development configurations."""
+
+    DEBUG: Final[bool] = True
+
+
+class ProdConfig(BaseConfigs):
     """Production configurations."""
 
     DEBUG: Final[bool] = False
 
     class Config:
-        """Class Configuration"""
+        """Environment Configurations"""
 
-        env_prefix: Final[str] = "PROD_"
+        env_file = ".env.prod"
 
 
-class TestConfig(DevConfig):
+class TestConfig(BaseConfigs):
+    """Testing configurations"""
+
+    DEBUG: Final[bool] = True
     TESTING: Final[bool] = True
 
     class Config:
-        """Class Configuration"""
+        """Environment Configurations"""
 
-        env_prefix: Final[str] = "TEST_"
+        env_file = ".env.test"
 
 
 def factory() -> DevConfig | TestConfig | ProdConfig:
@@ -58,20 +72,18 @@ def factory() -> DevConfig | TestConfig | ProdConfig:
         DevConfig | TestConfig | ProdConfig: Configurations
     """
     env = os.environ.get("ENV", "dev")
+    environment = {"dev": DevConfig, "prod": ProdConfig, "test": TestConfig}.get(
+        env.lower()
+    )
 
-    development = DevConfig()
-    testing = TestConfig()
-    production = ProdConfig()
+    if not environment:
+        raise ValueError(
+            f"Invalid environment: {env}. Please use either: dev, test, or prod"
+        )
 
-    env = env.lower()
+    config = environment()
 
-    if env == "prod":
-        return production
-    elif env == "test":
-        return testing
-    else:
-        # if env is prod
-        return development
+    return config
 
 
 configs = factory()
