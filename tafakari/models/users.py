@@ -2,10 +2,14 @@ import uuid
 
 import pendulum
 
+from ...configs import configs
+from ..controllers.schemas import SubredditViewSchema
+from ..database import db
+from ..extensions import bcrypt, cache
 from . import CRUDMixin
 from .usersubreddit import user_subreddit_junction_table
-from ..database import db
-from ..extensions import bcrypt
+
+# from ..controllers.schemas import SubredditViewSchema
 
 
 class User(db.Model, CRUDMixin):
@@ -41,6 +45,29 @@ class User(db.Model, CRUDMixin):
 
     def __repr__(self) -> str:
         return f"<User {self.username}>"
+
+    @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
+    def get_joined_sureddits(self) -> list[SubredditViewSchema]:
+        """Returns all subreddits a User is a member of
+
+        Returns:
+            list[SubredditViewSchema]: All Joined Subreddits
+        """
+        joined_subs = []
+
+        for subreddit in self.subreddits:
+            if subreddit.created_by != self.id:
+                joined_subs.append(
+                    SubredditViewSchema(
+                        name=subreddit.name,
+                        description=subreddit.description,
+                        id=subreddit.id,
+                        created_on=subreddit.created_on,
+                        members=subreddit.get_members(),
+                    )
+                )
+
+        return joined_subs
 
 
 def hash_password(password: str) -> bytes:

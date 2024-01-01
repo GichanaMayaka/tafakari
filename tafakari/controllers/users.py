@@ -34,23 +34,31 @@ def get_profile() -> tuple[Response | str, int]:
 
     if not cached_data:
         if current_user:
-            profile = User.query.filter_by(username=current_user.username).first()
+            profile: User = User.query.filter_by(username=current_user.username).first()
 
             if profile:
                 profile_schema = UserViewSchema.from_orm(profile)
-                subreddits_schema = AllSubredditsViewSchema(
-                    subreddits=[
-                        SubredditViewSchema(
-                            name=subreddit.name,
-                            description=subreddit.description,
-                            id=subreddit.id,
-                            user=profile_schema,
-                            created_on=subreddit.created_on,
-                        )
-                        for subreddit in Subreddit.query.filter(
-                            Subreddit.created_by == profile.id
-                        ).all()
-                    ]
+
+                created_subreddits = [
+                    SubredditViewSchema(
+                        name=subreddit.name,
+                        description=subreddit.description,
+                        id=subreddit.id,
+                        members=subreddit.get_members(),
+                        created_on=subreddit.created_on,
+                    )
+                    for subreddit in Subreddit.query.filter(
+                        Subreddit.created_by == profile.id
+                    ).all()
+                ]
+
+                joined_subs = profile.get_joined_sureddits()
+
+                if joined_subs:
+                    created_subreddits.extend(joined_subs)
+
+                all_subreddits = AllSubredditsViewSchema(
+                    subreddits=created_subreddits
                 )
 
                 posts_schema = AllPostsViewSchema(
@@ -92,7 +100,7 @@ def get_profile() -> tuple[Response | str, int]:
                     username=profile.username,
                     cake_day=profile.cake_day,
                     email=profile.email,
-                    subreddits=subreddits_schema,
+                    subreddits=all_subreddits,
                     posts=posts_schema,
                     comments=comments_schema,
                 ).dict(exclude_unset=True, exclude_none=True)
@@ -102,4 +110,4 @@ def get_profile() -> tuple[Response | str, int]:
 
         return jsonify(message="User not Found"), HTTPStatus.NOT_FOUND
 
-    return cached_data, HTTPStatus.OK
+    return jsonify(cached_data), HTTPStatus.OK

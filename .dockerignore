@@ -1,0 +1,11 @@
+.coverage
+*.pyc
+Dockerfile*
+.gitignore
+
+/.git/
+/.venv/
+/.vscode/
+/__pycache__/
+/.pytest_cache/
+/api collection/

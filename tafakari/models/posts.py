@@ -9,7 +9,9 @@ class Post(db.Model, CRUDMixin):
     title = db.Column(db.String(200), nullable=False, unique=False)
     text = db.Column(db.String(1000), nullable=True, unique=False)
     votes = db.Column(db.Integer, nullable=False, default=1)
-    created_on = db.Column(db.DateTime(timezone=True), default=pendulum.now, nullable=False)
+    created_on = db.Column(
+        db.DateTime(timezone=True), default=pendulum.now, nullable=False
+    )
 
     # Foreign Keys
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -18,7 +20,9 @@ class Post(db.Model, CRUDMixin):
     # Relationships
     user = db.relationship("User", back_populates="posts", uselist=False)
     subreddit = db.relationship("Subreddit", back_populates="posts", uselist=False)
-    comments = db.relationship("Comments", back_populates="post")
+    comments = db.relationship(
+        "Comments", back_populates="post", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<Post: {self.title}>"

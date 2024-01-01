@@ -47,8 +47,21 @@ def create_subreddit_post(body: CreatePostRequestSchema) -> tuple[Response, int]
             belongs_to=subreddit.id,
         )
 
+        created_post = PostViewSchema(
+            id=new_post.id,
+            subreddit_id=new_post.belongs_to,
+            title=new_post.title,
+            text=new_post.text,
+            votes=new_post.votes,
+            created_on=new_post.created_on,
+            user=UserViewSchema.from_orm(current_user),
+            comments=None,
+        ).dict()
+
         cache.set(
-            f"post_{new_post.id}", new_post, timeout=configs.CACHE_DEFAULT_TIMEOUT
+            f"post_{new_post.id}",
+            created_post,
+            timeout=configs.CACHE_DEFAULT_TIMEOUT,
         )
         cache.delete(f"{current_user.username}_profile")
         return (
@@ -238,7 +251,7 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
 
         return jsonify(message="Post Not Found"), HTTPStatus.NOT_FOUND
 
-    return cached_data, HTTPStatus.OK
+    return jsonify(cached_data), HTTPStatus.OK
 
 
 @posts.route("/posts/<int:post_id>/upvote", methods=["GET"])
@@ -291,3 +304,43 @@ def downvote_a_post(post_id: int) -> tuple[Response, int]:
         return jsonify(message="Down-voted Successfully"), HTTPStatus.ACCEPTED
 
     return jsonify(message="The post you selected does not exist"), HTTPStatus.NOT_FOUND
+
+
+@posts.route("/posts/<int:post_id>", methods=["DELETE"])
+@limiter.exempt
+@jwt_required(fresh=True)
+def delete_a_post(post_id: int) -> tuple[Response, int]:
+    """Deletes a Post and its comments
+
+    Args:
+        post_id (int): Post Id parsed from URL
+
+    Returns:
+        tuple[Response, int]: The Response Oject and Status Code
+    """
+    post: Post = Post.get_by_id(post_id)
+
+    if post and current_user:
+        post.delete()
+
+        cache.delete(f"post_{post_id}")
+        return (
+            jsonify(
+                post=PostViewSchema(
+                    id=post.id,
+                    subreddit_id=post.belongs_to,
+                    title=post.title,
+                    text=post.text,
+                    votes=post.votes,
+                    created_on=post.created_on,
+                    user=None,
+                    comments=None,
+                ).dict()
+            ),
+            HTTPStatus.ACCEPTED,
+        )
+
+    return (
+        jsonify(message="The Post you are trying to delete is Not Found"),
+        HTTPStatus.NOT_FOUND,
+    )

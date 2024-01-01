@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tafakari"
-version = "0.1.0"
+version = "0.2.0"
 description = "A simple Reddit clone backend built using Python, Flask, PostgreSQL, and Redis"
 authors = ["Gichana <gichanamayaka@gmail.com>"]
 readme = "README.md"

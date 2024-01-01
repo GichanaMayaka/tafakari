@@ -16,21 +16,14 @@ services:
       - tafakari-net
     ports:
       - "5432:5432"
-    env_file:
-      - .env
 
   redis-cache:
     container_name: redis-cache
     image: redis:latest
-    environment:
-      - REDIS_HOSTNAME=${PROD_REDIS_HOSTNAME}
-      - REDIS_PORT=${PROD_REDIS_PORT}
     networks:
       - tafakari-net
     ports:
       - "6379:6379"
-    env_file:
-      - .env
 
   adminer:
     image: adminer:latest
@@ -48,12 +41,12 @@ services:
     image: tafakari:latest
     container_name: tafakari
     volumes:
-      - ./:/usr/src/app/tafakari
+      - ./:/usr/src/app/tafakari:ro
     depends_on:
       - tafakari-db
       - redis-cache
-    ports:
-      - "8000:80"
+    ports: 
+      - "8000:8000"
     env_file:
       - .env
     networks:
@@ -65,7 +58,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "80:80"
+      - "81:81"
     depends_on:
       - web
     networks:

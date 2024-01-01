@@ -16,7 +16,6 @@ from .schemas import (
     AllSubredditsViewSchema,
     CreateSubredditRequestSchema,
     SubredditViewSchema,
-    UserViewSchema,
 )
 
 subreddits = Blueprint("subreddit", __name__)
@@ -45,9 +44,17 @@ def create_subreddit(body: CreateSubredditRequestSchema) -> tuple[Response, int]
         new_subreddit.user.append(current_user)
         new_subreddit.save()
 
+        created_subreddit = SubredditViewSchema(
+            id=new_subreddit.id,
+            name=new_subreddit.name,
+            description=new_subreddit.description,
+            members=new_subreddit.get_members(),
+            created_on=new_subreddit.created_on,
+        ).dict()
+
         cache.set(
             f"subreddit_{new_subreddit.id}",
-            new_subreddit,
+            created_subreddit,
             timeout=configs.CACHE_DEFAULT_TIMEOUT,
         )
         return jsonify(message="created"), HTTPStatus.CREATED
@@ -60,11 +67,11 @@ def create_subreddit(body: CreateSubredditRequestSchema) -> tuple[Response, int]
 
 @subreddits.route("/subreddits", methods=["GET"])
 @limiter.limit("1000/day")
-def get_all_subreddits() -> tuple[Response | str, int]:
+def get_all_subreddits() -> tuple[Response, int]:
     """Get all subreddits
 
     Returns:
-        tuple[Response | str, int]: Response Object and Status Code
+        tuple[Response, int]: Response Object and Status Code
     """
     cached_data = cache.get("all_subs")
 
@@ -74,20 +81,18 @@ def get_all_subreddits() -> tuple[Response | str, int]:
         all_subs_response = []
         if all_subs:
             for sub in all_subs:
-                user = User.query.filter_by(id=sub.created_by).first()
-                user_schema = UserViewSchema.from_orm(user)
-
                 subreddit_schema = SubredditViewSchema(
                     id=sub.id,
                     name=sub.name,
                     description=sub.description,
-                    user=user_schema,
+                    members=sub.get_members(),
                     created_on=sub.created_on,
                 )
 
                 all_subs_response.append(subreddit_schema)
 
             response = AllSubredditsViewSchema(subreddits=all_subs_response).dict()
+
             cache.set("all_subs", response, timeout=configs.CACHE_DEFAULT_TIMEOUT)
             return (
                 jsonify(response),
@@ -96,19 +101,19 @@ def get_all_subreddits() -> tuple[Response | str, int]:
 
         return jsonify(message="Subreddit Not Found"), HTTPStatus.NOT_FOUND
 
-    return cached_data, HTTPStatus.OK
+    return jsonify(cached_data), HTTPStatus.OK
 
 
 @subreddits.route("/subreddits/<int:subreddit_id>", methods=["GET"])
 @limiter.limit("1000/day")
-def get_subreddit_by_id(subreddit_id: int) -> tuple[Response | str, int]:
+def get_subreddit_by_id(subreddit_id: int) -> tuple[Response, int]:
     """Get a single subreddit
 
     Args:
         subreddit_id (int): Subreddit Id parsed from URL
 
     Returns:
-        tuple[Response | str, int]: Response Object and Status Code
+        tuple[Response, int]: Response Object and Status Code
     """
     cached_data = cache.get(f"subreddit_{subreddit_id}")
 
@@ -116,14 +121,11 @@ def get_subreddit_by_id(subreddit_id: int) -> tuple[Response | str, int]:
         subreddit = Subreddit.query.filter(Subreddit.id == subreddit_id).first()
 
         if subreddit:
-            user = User.query.filter_by(id=subreddit.created_by).first()
-            user_schema = UserViewSchema.from_orm(user)
-
             response = SubredditViewSchema(
                 id=subreddit.id,
                 name=subreddit.name,
                 description=subreddit.description,
-                user=user_schema,
+                members=subreddit.get_members(),
                 created_on=subreddit.created_on,
             ).dict()
 
@@ -139,7 +141,7 @@ def get_subreddit_by_id(subreddit_id: int) -> tuple[Response | str, int]:
 
         return jsonify(message="No Subreddit Found"), HTTPStatus.NOT_FOUND
 
-    return cached_data, HTTPStatus.OK
+    return jsonify(cached_data), HTTPStatus.OK
 
 
 @subreddits.route("/join/subreddits/<int:subreddit_id>", methods=["GET"])
@@ -159,9 +161,24 @@ def join_a_subreddit(subreddit_id: int) -> tuple[Response, int]:
     if subreddit and current_user:
         try:
             subreddit.user.append(current_user)
-
             subreddit.save()
 
+            updated_subreddit = SubredditViewSchema(
+                id=subreddit.id,
+                name=subreddit.name,
+                description=subreddit.description,
+                members=subreddit.get_members(),
+                created_on=subreddit.created_on,
+            ).dict()
+
+            cache.set(
+                f"subreddit_{subreddit.id}",
+                updated_subreddit,
+                timeout=configs.CACHE_DEFAULT_TIMEOUT,
+            )
+            cache.delete(f"subreddit_{subreddit.id}")
+            cache.delete("all_subs")
+            cache.delete(f"{current_user.username}_profile")
             return (
                 jsonify(
                     message=f"Successfully joined {subreddit.name}",
@@ -198,6 +215,8 @@ def delete_a_subreddit(subreddit_id: int) -> tuple[Response, int]:
         if subreddit_creator:
             subreddit_creator.delete()
 
+            cache.delete(f"subreddit_{subreddit_id}")
+            cache.delete("all_subs")
             return jsonify(message="Deleted Successfully"), HTTPStatus.ACCEPTED
 
     return (
