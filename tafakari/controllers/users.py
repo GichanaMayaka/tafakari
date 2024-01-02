@@ -1,13 +1,15 @@
 from http import HTTPStatus
 
-from flask import Blueprint, Response, jsonify
+from flask import Blueprint, Response, current_app, jsonify
 from flask_jwt_extended import current_user, jwt_required
 
+from ...configs import configs
 from ..extensions import cache
 from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from ..utils import get_logger_instance
 from .schemas import (
     AllCommentsViewSchema,
     AllPostsViewSchema,
@@ -31,9 +33,14 @@ def get_profile() -> tuple[Response | str, int]:
         tuple[Response | str, int]: Response Object and Status Code
     """
     cached_data = cache.get(f"{current_user.username}_profile")
+    logger = get_logger_instance(current_app=current_app)
 
     if not cached_data:
         if current_user:
+            logger.info(
+                "Retrieving profile data for user %s from the database.",
+                current_user.username,
+            )
             profile: User = User.query.filter_by(username=current_user.username).first()
 
             if profile:
@@ -57,9 +64,7 @@ def get_profile() -> tuple[Response | str, int]:
                 if joined_subs:
                     created_subreddits.extend(joined_subs)
 
-                all_subreddits = AllSubredditsViewSchema(
-                    subreddits=created_subreddits
-                )
+                all_subreddits = AllSubredditsViewSchema(subreddits=created_subreddits)
 
                 posts_schema = AllPostsViewSchema(
                     posts=[
@@ -95,6 +100,10 @@ def get_profile() -> tuple[Response | str, int]:
                     ]
                 )
 
+                logger.info(
+                    "Successfully retrieved profile data for user %s from the database.",
+                    current_user.username,
+                )
                 response = UserProfileViewSchema(
                     id=profile.id,
                     username=profile.username,
@@ -105,9 +114,24 @@ def get_profile() -> tuple[Response | str, int]:
                     comments=comments_schema,
                 ).dict(exclude_unset=True, exclude_none=True)
 
+                logger.info(
+                    "Caching profile data for user %s with key: %s_profile and a TTL of %d seconds.",
+                    current_user.username,
+                    current_user.username,
+                    configs.CACHE_DEFAULT_TIMEOUT,
+                )
                 cache.set(f"{current_user.username}_profile", response)
+                logger.info(
+                    "Successfully served profile data for user %s from the database.",
+                    current_user.username,
+                )
                 return jsonify(response), HTTPStatus.OK
 
+        logger.error(
+            "Returning 404 Not Found response for user %s: User not found.",
+            current_user.username,
+        )
         return jsonify(message="User not Found"), HTTPStatus.NOT_FOUND
 
+    logger.info("Serving cached profile data for username %s", current_user.username)
     return jsonify(cached_data), HTTPStatus.OK

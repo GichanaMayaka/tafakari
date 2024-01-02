@@ -1,5 +1,6 @@
 .coverage
 *.pyc
+*.log
 Dockerfile*
 .gitignore
 

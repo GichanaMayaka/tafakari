@@ -3,8 +3,8 @@ from typing import Any, Optional
 
 import pendulum
 import redis
-from flask import Blueprint, Response, jsonify
-from flask_jwt_extended import create_access_token, get_jwt, jwt_required
+from flask import Blueprint, Response, current_app, jsonify, request
+from flask_jwt_extended import create_access_token, current_user, get_jwt, jwt_required
 from flask_pydantic import validate
 from sqlalchemy import and_, exc
 
@@ -12,6 +12,7 @@ from tafakari.configs import configs
 
 from ..extensions import jwt, limiter
 from ..models.users import User, check_password
+from ..utils import get_client_ip_address, get_logger_instance
 from .schemas import UserRequestSchema, UserViewSchema
 
 authentications = Blueprint("authentication", __name__, url_prefix="/auth")
@@ -58,15 +59,27 @@ def login(body: UserRequestSchema) -> tuple[Response, int]:
     Returns:
         tuple[Response, int]: The Response Object and Status Code
     """
-    user = User.query.filter(
+    logger = get_logger_instance(current_app)
+    request_ip_address = get_client_ip_address(request)
+
+    user: User = User.query.filter(
         and_(
             User.username == body.username,
             User.email == body.email,
         )
     ).first()
+    logger.info(
+        "Retrieving User data for username %s from the database.",
+        body.username,
+    )
 
     if user and check_password(user.password, body.password):
         token = create_access_token(identity=user.username, fresh=True)
+        logger.info(
+            "User with username %s successfully logged in from IP address %s",
+            user.username,
+            request_ip_address,
+        )
         return (
             jsonify(
                 access_token=token,
@@ -77,6 +90,11 @@ def login(body: UserRequestSchema) -> tuple[Response, int]:
         )
 
     if not user:
+        logger.warning(
+            "Failed login attempt for username %s from IP address %s. No User Found with the credentials",
+            body.username,
+            request_ip_address,
+        )
         return (
             jsonify(
                 message="No user registered with those credentials. Please register to begin"
@@ -84,6 +102,11 @@ def login(body: UserRequestSchema) -> tuple[Response, int]:
             HTTPStatus.FORBIDDEN,
         )
 
+    logger.error(
+        "Invalid credentials provided for user %s from IP address %s",
+        body.username,
+        request_ip_address,
+    )
     return jsonify(message="Incorrect Credentials"), HTTPStatus.UNAUTHORIZED
 
 
@@ -96,8 +119,11 @@ def logout() -> tuple[Response, int]:
     Returns:
         tuple[Response, int]: The Response Object and Status Code
     """
+    logger = get_logger_instance(current_app)
+
     jti = get_jwt()["jti"]
     jwt_redis_blocklist.set(jti, "", ex=configs.JWT_ACCESS_TOKEN_EXPIRES)
+    logger.info("User %s Successfully Signed-Out", current_user.username)
     return jsonify(message="Access token revoked"), HTTPStatus.OK
 
 
@@ -112,11 +138,19 @@ def register(body: UserRequestSchema) -> tuple[Response, int]:
     Returns:
         tuple[Response, int]: The Response Object and Status Code
     """
+    logger = get_logger_instance(current_app)
+
+    logger.info("Checking for duplicate user")
     existing_user = User.query.filter(
         and_(User.username == body.username, User.email == body.email)
     ).first()
 
     if existing_user:
+        logger.warning(
+            "Duplicate user found using username: %s, and email: %s",
+            body.username,
+            body.email,
+        )
         return jsonify(message="User already exists"), HTTPStatus.CONFLICT
 
     if body.is_admin:
@@ -128,6 +162,7 @@ def register(body: UserRequestSchema) -> tuple[Response, int]:
         )
         new_user.save()
 
+        logger.info("Successfully registered user: %s", new_user.username)
         return jsonify(UserViewSchema.from_orm(new_user).dict()), HTTPStatus.CREATED
 
     try:
@@ -135,9 +170,15 @@ def register(body: UserRequestSchema) -> tuple[Response, int]:
             username=body.username, email=body.email, password=body.password
         )
 
+        logger.info("Successfully registered user: %s", new_user.username)
         return jsonify(UserViewSchema.from_orm(new_user).dict()), HTTPStatus.CREATED
 
     except exc.IntegrityError:
+        logger.warning(
+            "Duplicate user found using username: %s, and email: %s",
+            body.username,
+            body.email,
+        )
         return (
             jsonify(message="A user with the same credentials is registered."),
             HTTPStatus.CONFLICT,

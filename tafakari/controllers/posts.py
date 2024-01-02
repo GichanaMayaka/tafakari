@@ -58,12 +58,10 @@ def create_subreddit_post(body: CreatePostRequestSchema) -> tuple[Response, int]
             comments=None,
         ).dict()
 
-        cache.set(
-            f"post_{new_post.id}",
-            created_post,
-            timeout=configs.CACHE_DEFAULT_TIMEOUT,
-        )
+        cache.set(f"post_{new_post.id}", created_post)
         cache.delete(f"{current_user.username}_profile")
+        cache.delete(f"all_posts_in_subreddit_{subreddit.id}")
+        cache.delete("all_posts")
         return (
             jsonify(message=f"Post {new_post.title} created", timestamp=pendulum.now()),
             HTTPStatus.CREATED,
@@ -144,7 +142,7 @@ def get_all_posts_in_subreddit(subreddit_id: int) -> tuple[Response | str, int]:
     cached_data = cache.get(f"all_posts_in_subreddit_{subreddit_id}")
 
     if not cached_data:
-        subreddit = Subreddit.get_by_id(subreddit_id)
+        subreddit: Subreddit = Subreddit.get_by_id(subreddit_id)
 
         if subreddit:
             all_posts = Post.query.filter_by(belongs_to=subreddit_id).all()
@@ -203,7 +201,7 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
     cached_data = cache.get(f"post_{post_id}")
 
     if not cached_data:
-        post = Post.get_by_id(post_id)
+        post: Post = Post.get_by_id(post_id)
 
         if post:
             post_creator = User.get_by_id(post.created_by)
@@ -267,7 +265,7 @@ def upvote_a_post(post_id: int) -> tuple[Response, int]:
         tuple[Response, int]: Response Object and Status Code
     """
     # TODO: Make up-votes unique per user
-    post = Post.get_by_id(post_id)
+    post: Post = Post.get_by_id(post_id)
 
     if post and current_user:
         post.update(votes=post.votes + 1)
@@ -293,7 +291,7 @@ def downvote_a_post(post_id: int) -> tuple[Response, int]:
         tuple[Response, int]: Response Object and Status Code
     """
     # TODO: Make down-votes unique per user
-    post = Post.get_by_id(post_id)
+    post: Post = Post.get_by_id(post_id)
 
     if post and current_user:
         post.update(votes=post.votes - 1)

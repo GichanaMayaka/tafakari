@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, Response
+from flask import Flask, Response, request
 
 from tafakari.configs import configs
 
@@ -20,6 +20,7 @@ from .controllers.subreddits import subreddits
 from .controllers.users import user
 from .database import SQLALCHEMY_DATABASE_URI, db
 from .extensions import bcrypt, cache, cors, jwt, limiter, migrations
+from .utils import configure_logger, get_client_ip_address
 
 
 def create_app(
@@ -40,6 +41,9 @@ def create_app(
     app = Flask(__name__)
     app.config.from_object(configurations)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
+
+    logger = configure_logger(log_path="./tafakari.log")
+    app.logger.addHandler(logger)
 
     if additional_binds:
         app.config["SQLALCHEMY_BINDS"] = additional_binds
@@ -62,6 +66,16 @@ def create_app(
     @limiter.exempt
     def ping():
         return "PONG! \nWelcome to tafakari", 200
+
+    @app.before_request
+    def extract_ip_address() -> None:
+        ip_address = get_client_ip_address(request)
+        app.logger.info(
+            "Request received from %s: Method: %s, for URL: %s",
+            f"{ip_address}",
+            request.method,
+            request.url,
+        )
 
     @app.after_request
     def set_headers(response: Response) -> Response:
