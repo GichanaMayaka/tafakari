@@ -32,7 +32,7 @@ def create_subreddit_post(body: CreatePostRequestSchema) -> tuple[Response, int]
     """Create a post in a subreddit
 
     Args:
-        body (CreatePostRequestSchema): Request Schema
+        body (CreatePostRequestSchema): Request Body from Client
 
     Returns:
         tuple[Response, int]: Response Object and Status Code
@@ -76,6 +76,56 @@ def create_subreddit_post(body: CreatePostRequestSchema) -> tuple[Response, int]
     return (
         jsonify(message="Fatal Failure", current_user=current_user.username),
         HTTPStatus.EXPECTATION_FAILED,
+    )
+
+
+@posts.route("/posts/<int:post_id>", methods=["PUT"])
+@limiter.limit("5/hour")
+@validate(body=CreatePostRequestSchema)
+@jwt_required(fresh=True)
+def update_subreddit_post(
+    body: CreatePostRequestSchema, post_id: int
+) -> tuple[Response, int]:
+    """Update/Edit a post in a subreddit
+
+    Args:
+        body (CreatePostRequestSchema): Request Body from Client
+
+    Returns:
+        tuple[Response, int]: Response Object and Status Code
+    """
+    subreddit = Subreddit.get_by_id(body.subreddit_id)
+
+    if current_user and subreddit:
+        post: Post = Post.get_by_id(post_id)
+
+        if post:
+            updated_post: Post = post.update(
+                title=body.title, text=body.text, modified_on=pendulum.now()
+            )
+
+            response = PostViewSchema(
+                id=updated_post.id,
+                subreddit_id=updated_post.belongs_to,
+                title=updated_post.title,
+                text=updated_post.text,
+                votes=updated_post.votes,
+                created_on=updated_post.created_on,
+                user=UserViewSchema.from_orm(current_user),
+                comments=post.get_all_post_comments(),
+            ).dict()
+
+            cache.set(f"post_{post_id}", response)
+            return jsonify(response), HTTPStatus.ACCEPTED
+
+        return (
+            jsonify(message="The Post you are trying to edit doesn't exist"),
+            HTTPStatus.NOT_FOUND,
+        )
+
+    return (
+        jsonify(message="You are not allowed to access this resource"),
+        HTTPStatus.FORBIDDEN,
     )
 
 
@@ -240,11 +290,7 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
                     created_on=post.created_on,
                 ).dict(exclude_none=True)
 
-                cache.set(
-                    f"post_{post_id}",
-                    post_response,
-                    timeout=configs.CACHE_DEFAULT_TIMEOUT,
-                )
+                cache.set(f"post_{post_id}", post_response)
                 return jsonify(post_response), HTTPStatus.OK
 
         return jsonify(message="Post Not Found"), HTTPStatus.NOT_FOUND

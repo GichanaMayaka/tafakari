@@ -1,10 +1,23 @@
 import pendulum
 
-from . import CRUDMixin
+from ...configs import configs
+from ..controllers.schemas import CommentViewSchema, UserViewSchema
 from ..database import db
+from ..extensions import cache
+from . import CRUDMixin
 
 
 class Post(db.Model, CRUDMixin):
+    """Represents a Post
+
+    Args:
+        db (Model): SQLAlchemy db object
+        CRUDMixin (CRUDMixin): Mixins
+
+    Returns:
+        Post: Represents a Post
+    """
+
     __tablename__ = "post"
     title = db.Column(db.String(200), nullable=False, unique=False)
     text = db.Column(db.String(1000), nullable=True, unique=False)
@@ -26,3 +39,25 @@ class Post(db.Model, CRUDMixin):
 
     def __repr__(self) -> str:
         return f"<Post: {self.title}>"
+
+    @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
+    def get_all_post_comments(self) -> list[CommentViewSchema]:
+        """Returns all Comments in this Post
+
+        Returns:
+            list[CommentViewSchema]: All Comments in this Post
+        """
+        all_comments = []
+        for comment in self.comments:
+            all_comments.append(
+                CommentViewSchema(
+                    comment=comment.comment,
+                    id=comment.id,
+                    votes=comment.votes,
+                    created_on=comment.created_on,
+                    post_id=comment.post_id,
+                    user=UserViewSchema.from_orm(comment.user),
+                )
+            )
+
+        return all_comments

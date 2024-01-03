@@ -12,6 +12,7 @@ Dockerfile*
 /.git/
 /.venv/
 /.vscode/
+/.idea/
 /__pycache__/
 /.pytest_cache/
 /api collection/

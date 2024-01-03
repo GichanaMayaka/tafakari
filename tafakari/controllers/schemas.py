@@ -99,6 +99,12 @@ class AllSubredditsViewSchema(BaseTafakariSchema):
 
 
 class UserProfileViewSchema(UserViewSchema):
+    """View Profile Response Schema
+
+    Args:
+        UserViewSchema (BaseTafakariSchema): parent class UserViewSchema
+    """
+
     cake_day: datetime.datetime
     email: str
     subreddits: Optional[AllSubredditsViewSchema]

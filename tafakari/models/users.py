@@ -9,8 +9,6 @@ from ..extensions import bcrypt, cache
 from . import CRUDMixin
 from .usersubreddit import user_subreddit_junction_table
 
-# from ..controllers.schemas import SubredditViewSchema
-
 
 class User(db.Model, CRUDMixin):
     """
@@ -70,9 +68,26 @@ class User(db.Model, CRUDMixin):
         return joined_subs
 
 
-def hash_password(password: str) -> bytes:
+def hash_password(password: str) -> str:
+    """Hashes the password
+
+    Args:
+        password (str): Password String
+
+    Returns:
+        str: Password Hash
+    """
     return bcrypt.generate_password_hash(password).decode("utf-8")
 
 
 def check_password(hashed_pwd: str, pwd: str) -> bool:
+    """Tests a password hash against another
+
+    Args:
+        hashed_pwd (str): Password One
+        pwd (str): Password Two
+
+    Returns:
+        bool: Test Results
+    """
     return bcrypt.check_password_hash(hashed_pwd, pwd)

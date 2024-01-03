@@ -1,10 +1,21 @@
+import pendulum
+
 from ..database import db
 
 
 class CRUDMixin(object):
+    """CRUD Mixins Class
+
+    Args:
+        object (object): Base class
+    """
+
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    modified_on = db.Column(
+        db.DateTime(timezone=True), default=pendulum.now, nullable=False
+    )
 
     @classmethod
     def get_by_id(cls, id: int):
