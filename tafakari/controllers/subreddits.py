@@ -142,7 +142,7 @@ def get_all_subreddits() -> tuple[Response, int]:
 
             response = AllSubredditsViewSchema(subreddits=all_subs_response).dict()
 
-            cache.set("all_subs", response, timeout=configs.CACHE_DEFAULT_TIMEOUT)
+            cache.set("all_subs", response)
             return (
                 jsonify(response),
                 HTTPStatus.OK,
