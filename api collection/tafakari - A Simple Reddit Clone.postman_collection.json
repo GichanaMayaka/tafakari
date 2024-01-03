@@ -1,7 +1,7 @@
 {
   "client": "Thunder Client",
   "collectionName": "tafakari - A Simple Reddit Clone",
-  "dateExported": "2023-12-27T13:31:06.611Z",
+  "dateExported": "2024-01-03T12:09:34.867Z",
   "version": "1.1",
   "folders": [
     {
@@ -46,16 +46,16 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "d02b3ce0-4468-44c7-8ce1-18ffe9e6dbb3",
       "name": "login",
-      "url": "/auth/login",
+      "url": "{{tafakari}}/auth/login",
       "method": "POST",
       "sortNum": 10000,
       "created": "2023-08-14T06:18:28.853Z",
-      "modified": "2023-12-26T07:08:27.466Z",
+      "modified": "2024-01-03T12:03:54.961Z",
       "headers": [],
       "params": [],
       "body": {
         "type": "json",
-        "raw": "{\n    \"username\": \"jusline\",\n    \"email\": \"jusline@gmail.com\",\n    \"password\": \"password\"\n}",
+        "raw": "{\n  \"username\": \"gichana\",\n  \"email\": \"gichana@email.com\",\n  \"password\": \"passwords\"\n}",
         "form": []
       },
       "tests": [
@@ -78,11 +78,11 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "d02b3ce0-4468-44c7-8ce1-18ffe9e6dbb3",
       "name": "logout",
-      "url": "/auth/logout",
+      "url": "{{tafakari}}/auth/logout",
       "method": "DELETE",
       "sortNum": 20000,
       "created": "2023-08-14T06:18:28.854Z",
-      "modified": "2023-12-25T07:09:01.994Z",
+      "modified": "2023-12-29T19:28:46.020Z",
       "headers": [],
       "params": [],
       "auth": {
@@ -100,7 +100,7 @@
       "method": "POST",
       "sortNum": 30000,
       "created": "2023-08-14T06:18:28.855Z",
-      "modified": "2023-12-25T20:12:08.920Z",
+      "modified": "2024-01-03T09:14:15.353Z",
       "headers": [],
       "params": [
         {
@@ -124,7 +124,7 @@
       ],
       "body": {
         "type": "json",
-        "raw": "{\n  \"username\": \"jusline\",\n  \"email\": \"jusline@gmail.com\",\n  \"password\": \"password\"\n}",
+        "raw": "{\n  \"username\": \"gichana\",\n  \"email\": \"gichana@email.com\",\n  \"password\": \"password\"\n}",
         "form": []
       },
       "tests": [
@@ -145,12 +145,12 @@
       "method": "POST",
       "sortNum": 40000,
       "created": "2023-08-14T06:18:28.856Z",
-      "modified": "2023-12-25T20:05:40.657Z",
+      "modified": "2023-12-30T10:56:36.814Z",
       "headers": [],
       "params": [],
       "body": {
         "type": "json",
-        "raw": "{\n    \"name\": \"Software Development\",\n    \"description\": \"All about Software Development\"\n}",
+        "raw": "{\n  \"name\": \"Watercolour\",\n  \"description\": \"All about Watercolour Painting\"\n}",
         "form": []
       },
       "auth": {
@@ -168,7 +168,7 @@
       "method": "GET",
       "sortNum": 50000,
       "created": "2023-08-14T06:18:28.857Z",
-      "modified": "2023-12-25T06:56:08.347Z",
+      "modified": "2023-12-30T11:12:41.793Z",
       "headers": [],
       "params": [],
       "auth": {
@@ -186,7 +186,7 @@
       "method": "GET",
       "sortNum": 60000,
       "created": "2023-08-14T06:18:28.858Z",
-      "modified": "2023-12-27T12:51:15.354Z",
+      "modified": "2023-12-30T10:56:47.336Z",
       "headers": [],
       "params": [
         {
@@ -221,20 +221,23 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
       "name": "delete a subreddit",
-      "url": "{{url}}/subreddits/6",
+      "url": "{{tafakari}}/subreddits/1",
       "method": "DELETE",
       "sortNum": 80000,
       "created": "2023-08-14T06:18:28.860Z",
-      "modified": "2023-08-14T06:18:28.860Z",
+      "modified": "2024-01-01T08:14:31.711Z",
       "headers": [],
+      "params": [],
       "body": {
         "type": "json",
-        "raw": "{\r\n    \"username\": \"gichana\",\r\n    \"email\": \"gichana@email.com\",\r\n    \"password\": \"password\"\r\n}"
+        "raw": "{\n    \"username\": \"gichana\",\n    \"email\": \"gichana@email.com\",\n    \"password\": \"password\"\n}",
+        "form": []
       },
       "auth": {
         "type": "bearer",
-        "bearer": "{{jwt}}"
-      }
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
     },
     {
       "_id": "45fc0a78-a40a-4f15-a7db-6ddd2b78eb2d",
@@ -245,12 +248,12 @@
       "method": "POST",
       "sortNum": 90000,
       "created": "2023-08-14T06:18:28.861Z",
-      "modified": "2023-12-27T11:27:00.437Z",
+      "modified": "2024-01-03T07:39:04.348Z",
       "headers": [],
       "params": [],
       "body": {
         "type": "json",
-        "raw": "{\n  \"subreddit_id\": 1,\n  \"title\": \"Winslow Homer paintings\",\n  \"text\": \"I love Winslow Homer's watercolour paintings\"\n}",
+        "raw": "{\n  \"subreddit_id\": 1,\n  \"title\": \"JMW Turner\",\n  \"text\": \"I love JMW Turner's watercolour paintings\"\n}",
         "form": []
       },
       "auth": {
@@ -264,11 +267,11 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
       "name": "get all posts in a subreddit",
-      "url": "{{tafakari}}/subreddits/2/posts",
+      "url": "{{tafakari}}/subreddits/1/posts",
       "method": "GET",
       "sortNum": 100000,
       "created": "2023-08-14T06:18:28.862Z",
-      "modified": "2023-12-27T13:10:29.261Z",
+      "modified": "2023-12-29T19:31:32.000Z",
       "headers": [],
       "params": [],
       "auth": {
@@ -300,27 +303,29 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
       "name": "vote a post (downvote)",
-      "url": "{{url}}/posts/2/downvote",
+      "url": "{{tafakari}}/posts/1/downvote",
       "method": "GET",
       "sortNum": 120000,
       "created": "2023-08-14T06:18:28.864Z",
-      "modified": "2023-08-14T06:18:28.864Z",
+      "modified": "2024-01-01T10:04:21.042Z",
       "headers": [],
+      "params": [],
       "auth": {
         "type": "bearer",
-        "bearer": "{{jwt}}"
-      }
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
     },
     {
       "_id": "98ddce24-c3f1-4975-b928-2897bef5a648",
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
       "name": "get post by id",
-      "url": "{{tafakari}}/posts/7",
+      "url": "{{tafakari}}/posts/1",
       "method": "GET",
       "sortNum": 130000,
       "created": "2023-08-14T06:18:28.865Z",
-      "modified": "2023-12-27T13:12:03.681Z",
+      "modified": "2024-01-01T10:03:26.173Z",
       "headers": [],
       "params": [],
       "tests": []
@@ -344,36 +349,41 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
       "name": "add a comment to a post",
-      "url": "{{url}}/posts/2/comments",
+      "url": "{{tafakari}}/posts/1/comments",
       "method": "POST",
       "sortNum": 150000,
       "created": "2023-08-14T06:18:28.867Z",
-      "modified": "2023-08-14T06:18:28.867Z",
+      "modified": "2024-01-01T10:05:08.098Z",
       "headers": [],
+      "params": [],
       "body": {
         "type": "json",
-        "raw": "{\r\n    \"comment\": \"Me too, he is someone who really took watercolour painting seriously\"\r\n}"
+        "raw": "{\n    \"comment\": \"Me too, he is someone who really took watercolour painting seriously\"\n}",
+        "form": []
       },
       "auth": {
         "type": "bearer",
-        "bearer": "{{jwt}}"
-      }
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
     },
     {
       "_id": "98a12429-d2cf-459f-ba62-5272adf1c304",
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
       "name": "vote a comment (upvote)",
-      "url": "{{url}}/posts/1/comments/1/upvote",
+      "url": "{{tafakari}}/posts/1/comments/1/upvote",
       "method": "GET",
       "sortNum": 160000,
       "created": "2023-08-14T06:18:28.868Z",
-      "modified": "2023-08-14T06:18:28.868Z",
+      "modified": "2024-01-01T10:21:29.496Z",
       "headers": [],
+      "params": [],
       "auth": {
         "type": "bearer",
-        "bearer": "{{jwt}}"
-      }
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
     },
     {
       "_id": "fd64af33-af19-49ed-9a46-7dc23bd6b995",
@@ -412,11 +422,53 @@
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
       "containerId": "93deae00-1f98-4dbf-a013-9bece7de5b4a",
       "name": "view user profile",
-      "url": "/profile",
+      "url": "{{tafakari}}/profile",
       "method": "GET",
       "sortNum": 190000,
       "created": "2023-08-14T06:18:28.871Z",
-      "modified": "2023-12-25T07:05:11.623Z",
+      "modified": "2024-01-02T14:11:52.527Z",
+      "headers": [],
+      "params": [],
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": [],
+      "preReq": {
+        "runRequests": [
+          {
+            "reqId": "42565898-3efe-42e7-a555-e5384887a9d2",
+            "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+            "triggerCondition": "run-once",
+            "triggerValue": ""
+          }
+        ]
+      }
+    },
+    {
+      "_id": "79671617-687b-4d49-86fe-7b6f8f9496d6",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "",
+      "name": "home",
+      "url": "{{tafakari}}/ping",
+      "method": "GET",
+      "sortNum": 200000,
+      "created": "2023-08-14T06:18:28.872Z",
+      "modified": "2023-12-30T08:28:22.716Z",
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "d3f0877a-fdd4-421f-b40c-04e6269f8309",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "delete a post by id",
+      "url": "{{tafakari}}/posts/3",
+      "method": "DELETE",
+      "sortNum": 210000,
+      "created": "2024-01-01T09:46:55.540Z",
+      "modified": "2024-01-01T09:49:41.915Z",
       "headers": [],
       "params": [],
       "auth": {
@@ -426,17 +478,72 @@
       "tests": []
     },
     {
-      "_id": "79671617-687b-4d49-86fe-7b6f8f9496d6",
+      "_id": "eccf2fdf-e255-4c94-92f1-8c2fe3974a32",
       "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
-      "containerId": "",
-      "name": "home",
-      "url": "/ping",
-      "method": "GET",
-      "sortNum": 200000,
-      "created": "2023-08-14T06:18:28.872Z",
-      "modified": "2023-12-25T07:13:17.465Z",
+      "containerId": "8fa55bce-c64d-4969-9449-efa321aed6a6",
+      "name": "edit a post",
+      "url": "{{tafakari}}/posts/1",
+      "method": "PUT",
+      "sortNum": 220000,
+      "created": "2024-01-03T07:39:49.315Z",
+      "modified": "2024-01-03T09:34:56.719Z",
       "headers": [],
       "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"subreddit_id\": 1,\n  \"title\": \"JMW Turner\",\n  \"text\": \"I love JMW Turner's watercolour paintings so much!\"\n}",
+        "form": []
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "7a21e5a1-bb69-4f4f-b631-e96df2ee688c",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "eea9cdb8-0d59-4b6b-8900-0956f9ea7867",
+      "name": "update a comment",
+      "url": "{{tafakari}}/posts/1/comments/1",
+      "method": "PUT",
+      "sortNum": 230000,
+      "created": "2024-01-03T09:12:36.334Z",
+      "modified": "2024-01-03T09:13:40.913Z",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"comment\": \"Me too, he is someone who really took watercolour painting, and landscape painting to new heights\"\n}",
+        "form": []
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "50726b3a-b2b7-470b-8cb7-17675acf6d92",
+      "colId": "ecb4c471-b38b-4be8-99bf-74e789379950",
+      "containerId": "12df294c-2a36-46b6-8227-8196a0ab7cf6",
+      "name": "update a subreddit",
+      "url": "{{tafakari}}/subreddits/1",
+      "method": "PUT",
+      "sortNum": 240000,
+      "created": "2024-01-03T09:39:23.647Z",
+      "modified": "2024-01-03T10:02:12.297Z",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Watercolour Painting\",\n  \"description\": \"It's all about Watercolour Painting\"\n}",
+        "form": []
+      },
+      "auth": {
+        "type": "bearer",
+        "bearer": "{{access_token}}"
+      },
       "tests": []
     }
   ],
