@@ -97,7 +97,13 @@ def update_subreddit_post(
     subreddit = Subreddit.get_by_id(body.subreddit_id)
 
     if current_user and subreddit:
-        post: Post = Post.get_by_id(post_id)
+        post: Post = Post.query.filter(
+            and_(
+                Post.id == post_id,
+                Post.created_by == current_user.id,
+                Post.belongs_to == subreddit.id,
+            )
+        ).first()
 
         if post:
             updated_post: Post = post.update(
@@ -119,13 +125,13 @@ def update_subreddit_post(
             return jsonify(response), HTTPStatus.ACCEPTED
 
         return (
-            jsonify(message="The Post you are trying to edit doesn't exist"),
-            HTTPStatus.NOT_FOUND,
+            jsonify(message="You can't edit a Post you did not create"),
+            HTTPStatus.FORBIDDEN,
         )
 
     return (
-        jsonify(message="You are not allowed to access this resource"),
-        HTTPStatus.FORBIDDEN,
+        jsonify(message="The requested resource was not found"),
+        HTTPStatus.NOT_FOUND,
     )
 
 
