@@ -65,6 +65,55 @@ def create_subreddit(body: CreateSubredditRequestSchema) -> tuple[Response, int]
     )
 
 
+@subreddits.route("/subreddits/<int:subreddit_id>", methods=["PUT"])
+@limiter.limit("10/hour")
+@jwt_required(fresh=True)
+@validate(body=CreateSubredditRequestSchema)
+def update_a_subreddit(
+    body: CreateSubredditRequestSchema, subreddit_id: int
+) -> tuple[Response, int]:
+    """Update a subreddit
+
+    Args:
+        body (CreateSubredditRequestSchema): The Request body from the Client
+
+    Returns:
+        tuple[Response, int]: Response Object and Status Code
+    """
+    if current_user:
+        subreddit: Subreddit = Subreddit.query.filter(
+            and_(Subreddit.created_by == current_user.id, Subreddit.id == subreddit_id)
+        ).first()
+
+        if subreddit:
+            updated_subreddit = subreddit.update(
+                name=body.name, description=body.description, modified_on=pendulum.now()
+            )
+
+            response = SubredditViewSchema(
+                id=updated_subreddit.id,
+                name=updated_subreddit.name,
+                description=updated_subreddit.description,
+                created_on=updated_subreddit.created_on,
+                members=subreddit.get_members(),
+            ).dict()
+
+            cache.set(f"subreddit_{updated_subreddit.id}", response)
+            cache.delete(f"{current_user.username}_profile")
+            cache.delete("all_subs")
+            return jsonify(response), HTTPStatus.ACCEPTED
+
+        return (
+            jsonify(message="You can't edit a subreddit you did not create"),
+            HTTPStatus.FORBIDDEN,
+        )
+
+    return (
+        jsonify(message="You are not allowed to access this resource"),
+        HTTPStatus.FORBIDDEN,
+    )
+
+
 @subreddits.route("/subreddits", methods=["GET"])
 @limiter.limit("1000/day")
 def get_all_subreddits() -> tuple[Response, int]:
