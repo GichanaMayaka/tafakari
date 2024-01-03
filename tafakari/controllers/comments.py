@@ -89,6 +89,7 @@ def update_comment(
 
             cache.delete(f"post_{post_id}")
             cache.delete(f"{current_user.username}_profile")
+            cache.delete("all_posts")
             return jsonify(response), HTTPStatus.ACCEPTED
 
         return (

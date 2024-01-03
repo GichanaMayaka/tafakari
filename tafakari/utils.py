@@ -72,7 +72,7 @@ def get_logger_instance(current_app: Flask) -> Logger:
         current_app (Flask): The current running Flask App
 
     Yields:
-        Generator: The Logger Object
+        Logger: The Logger Object
     """
     with current_app.app_context():
         logger = current_app.logger

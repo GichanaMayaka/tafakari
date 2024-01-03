@@ -122,6 +122,8 @@ def update_subreddit_post(
             ).dict()
 
             cache.set(f"post_{post_id}", response)
+            cache.delete("all_posts")
+            cache.delete(f"{current_user.username}_profile")
             return jsonify(response), HTTPStatus.ACCEPTED
 
         return (
