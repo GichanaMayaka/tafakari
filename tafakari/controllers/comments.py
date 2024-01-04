@@ -70,7 +70,11 @@ def update_comment(
 
     if post and current_user:
         comment: Comments = Comments.query.filter(
-            and_(Comments.post_id == post_id, Comments.user_id == current_user.id)
+            and_(
+                Comments.post_id == post_id,
+                Comments.id == comment_id,
+                Comments.user_id == current_user.id,
+            )
         ).first()
 
         if comment:
@@ -144,6 +148,7 @@ def reply_to_a_comment(
                 parent_id=reply.parent_id,
             ).dict()
 
+            # TODO: Implement cache invalidations
             return jsonify(response), HTTPStatus.OK
 
         return (
