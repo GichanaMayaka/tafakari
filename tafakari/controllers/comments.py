@@ -85,6 +85,7 @@ def update_comment(
                 created_on=updated_comment.created_on,
                 user=UserViewSchema.from_orm(current_user),
                 post_id=post_id,
+                parent_id=update_comment.parent_id,
             ).dict()
 
             cache.delete(f"post_{post_id}")
@@ -101,6 +102,54 @@ def update_comment(
         jsonify(message="You are not allowed to access this resource"),
         HTTPStatus.FORBIDDEN,
     )
+
+
+@comments.route("/posts/<int:post_id>/comments/<int:comment_id>", methods=["POST"])
+@limiter.limit("500/hour")
+@validate(body=CommentRequestSchema)
+@jwt_required(fresh=True)
+def reply_to_a_comment(
+    body: CommentRequestSchema, post_id: int, comment_id: int
+) -> tuple[Response, int]:
+    """Replies to a Comment in a Post by creating a new comment that has the initial comment as the parent.
+
+    Args:
+        body (CommentRequestSchema): The Request body from Client
+
+    Returns:
+        tuple[Response, int]: Response Object and Status Code
+    """
+    if current_user:
+        comment = Comments.query.filter(
+            and_(Comments.id == comment_id, Comments.post_id == post_id)
+        ).first()
+
+        if comment:
+            reply = Comments.create(
+                comment=body.comment,
+                parent_id=comment.id,
+                post_id=post_id,
+                user_id=current_user.id,
+            )
+
+            response = CommentViewSchema(
+                id=reply.id,
+                comment=reply.comment,
+                votes=reply.votes,
+                created_on=reply.created_on,
+                user=UserViewSchema.from_orm(current_user),
+                post_id=post_id,
+                parent_id=reply.parent_id,
+            ).dict()
+
+            return jsonify(response), HTTPStatus.OK
+
+        return (
+            jsonify(message="The Resource you are trying to access is not found"),
+            HTTPStatus.NOT_FOUND,
+        )
+
+    return jsonify(message="Forbidden"), HTTPStatus.FORBIDDEN
 
 
 @comments.route("/posts/<int:post_id>/comments/<int:comment_id>", methods=["DELETE"])

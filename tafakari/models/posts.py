@@ -1,7 +1,11 @@
 import pendulum
 
 from ...configs import configs
-from ..controllers.schemas import CommentViewSchema, UserViewSchema
+from ..controllers.schemas import (
+    CommentViewSchema,
+    UserViewSchema,
+    AllCommentsViewSchema,
+)
 from ..database import db
 from ..extensions import cache
 from . import CRUDMixin
@@ -41,7 +45,7 @@ class Post(db.Model, CRUDMixin):
         return f"<Post: {self.title}>"
 
     @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
-    def get_all_post_comments(self) -> list[CommentViewSchema]:
+    def get_all_post_comments(self) -> AllCommentsViewSchema:
         """Returns all Comments in this Post
 
         Returns:
@@ -57,7 +61,8 @@ class Post(db.Model, CRUDMixin):
                     created_on=comment.created_on,
                     post_id=comment.post_id,
                     user=UserViewSchema.from_orm(comment.user),
+                    parent_id=comment.parent_id,
                 )
             )
 
-        return all_comments
+        return AllCommentsViewSchema(comments=all_comments)

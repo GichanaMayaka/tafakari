@@ -9,13 +9,11 @@ from sqlalchemy import and_
 from tafakari.configs import configs
 
 from ..extensions import cache, limiter
-from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
 from .schemas import (
     AllPostsViewSchema,
-    CommentViewSchema,
     CreatePostRequestSchema,
     PostViewSchema,
     UserViewSchema,
@@ -263,28 +261,10 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
 
         if post:
             post_creator = User.get_by_id(post.created_by)
-            subreddit = Subreddit.get_by_id(post.belongs_to)
-            all_post_comments = Comments.query.filter(
-                and_(Comments.post_id == post.id)
-            ).all()
+            subreddit: Subreddit = Subreddit.get_by_id(post.belongs_to)
+            all_post_comments = post.get_all_post_comments()
 
-            if post_creator:
-                comments_collection = []
-
-                for comment in all_post_comments:
-                    comment_creator = User.get_by_id(comment.user_id)
-                    comment_creator_schema = UserViewSchema.from_orm(comment_creator)
-
-                    comment_schema = CommentViewSchema(
-                        id=comment.id,
-                        votes=comment.votes,
-                        created_on=comment.created_on,
-                        user=comment_creator_schema,
-                        comment=comment.comment,
-                        post_id=post.id,
-                    )
-                    comments_collection.append(comment_schema)
-
+            if subreddit:
                 post_creator_schema = UserViewSchema.from_orm(post_creator)
 
                 post_response = PostViewSchema(
@@ -294,9 +274,9 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
                     text=post.text,
                     votes=post.votes,
                     user=post_creator_schema,
-                    comments=comments_collection,
+                    comments=all_post_comments,
                     created_on=post.created_on,
-                ).dict(exclude_none=True)
+                ).dict()
 
                 cache.set(f"post_{post_id}", post_response)
                 return jsonify(post_response), HTTPStatus.OK
@@ -376,6 +356,8 @@ def delete_a_post(post_id: int) -> tuple[Response, int]:
         post.delete()
 
         cache.delete(f"post_{post_id}")
+        cache.delete("all_posts")
+        cache.delete(f"{current_user.username}_profile")
         return (
             jsonify(
                 post=PostViewSchema(

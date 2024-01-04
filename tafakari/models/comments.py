@@ -1,6 +1,13 @@
 import pendulum
 
+from ...configs import configs
+from ..controllers.schemas import (
+    AllCommentsViewSchema,
+    CommentViewSchema,
+    UserViewSchema,
+)
 from ..database import db
+from ..extensions import cache
 from . import CRUDMixin
 
 
@@ -34,3 +41,49 @@ class Comments(db.Model, CRUDMixin):
 
     def __repr__(self) -> str:
         return f"<Comment: {self.comment}>"
+
+    @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
+    def get_parent_comment(self) -> CommentViewSchema | None:
+        """Returns the parent comment of a reply comment
+
+        Returns:
+            CommentViewSchema | None: The Parent Comment as a serialisable schema. Returns None if comment is the parent
+        """
+        if self.parent:
+            parent_comment = self.parent
+            parent = CommentViewSchema(
+                id=parent_comment.id,
+                comment=parent_comment.comment,
+                votes=parent_comment.votes,
+                created_on=parent_comment.created_on,
+                user=UserViewSchema.from_orm(parent_comment.user),
+                post_id=parent_comment.post_id,
+                parent_id=parent_comment.parent_id,
+            )
+            return parent
+
+        return None
+
+    @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
+    def get_direct_comment_replies(self) -> AllCommentsViewSchema:
+        """Returns all children comments of this comment
+
+        Returns:
+            list: All Child Comments
+        """
+        all_comments = []
+
+        for comment in self.children:
+            all_comments.append(
+                CommentViewSchema(
+                    comment=comment.comment,
+                    id=comment.id,
+                    votes=comment.votes,
+                    created_on=comment.created_on,
+                    user=UserViewSchema.from_orm(comment.user),
+                    post_id=comment.post_id,
+                    parent_id=comment.parent_id,
+                )
+            )
+
+        return AllCommentsViewSchema(comments=all_comments)

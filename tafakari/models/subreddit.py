@@ -1,7 +1,7 @@
 import pendulum
 
 from ...configs import configs
-from ..controllers.schemas import UserViewSchema
+from ..controllers.schemas import AllUsersViewSchema, UserViewSchema
 from ..database import db
 from ..extensions import cache
 from . import CRUDMixin
@@ -36,7 +36,7 @@ class Subreddit(db.Model, CRUDMixin):
         return f"<Subreddit: {self.name}>"
 
     @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
-    def get_members(self) -> list[UserViewSchema]:
+    def get_members(self) -> AllUsersViewSchema:
         """Returns all Members in a Subreddit
 
         Returns:
@@ -46,4 +46,4 @@ class Subreddit(db.Model, CRUDMixin):
         for member in self.user:
             all_members.append(UserViewSchema.from_orm(member))
 
-        return all_members
+        return AllUsersViewSchema(users=all_members)

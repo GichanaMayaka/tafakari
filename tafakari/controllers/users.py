@@ -93,6 +93,7 @@ def get_profile() -> tuple[Response | str, int]:
                             created_on=comment.created_on,
                             user=profile_schema,
                             post_id=comment.post_id,
+                            parent_id=comment.parent_id,
                         )
                         for comment in Comments.query.filter(
                             Comments.user_id == profile.id

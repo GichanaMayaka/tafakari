@@ -12,13 +12,6 @@ class BaseTafakariSchema(BaseModel):
         allow_population_by_field_name = True
 
 
-class UserViewSchema(BaseTafakariSchema):
-    """User Response Schema"""
-
-    id: int
-    username: str
-
-
 class UserRequestSchema(BaseTafakariSchema):
     """User Request Schema"""
 
@@ -26,6 +19,19 @@ class UserRequestSchema(BaseTafakariSchema):
     email: str
     password: str
     is_admin: Optional[bool]
+
+
+class UserViewSchema(BaseTafakariSchema):
+    """User Response Schema"""
+
+    id: int
+    username: str
+
+
+class AllUsersViewSchema(BaseTafakariSchema):
+    """Users list Response Schema"""
+
+    users: list[UserViewSchema]
 
 
 class CommentRequestSchema(BaseTafakariSchema):
@@ -42,6 +48,7 @@ class CommentViewSchema(CommentRequestSchema):
     created_on: datetime.datetime
     user: UserViewSchema
     post_id: Optional[int]
+    parent_id: Optional[int]
 
 
 class AllCommentsViewSchema(BaseTafakariSchema):
@@ -68,7 +75,7 @@ class PostViewSchema(BaseTafakariSchema):
     votes: int
     created_on: datetime.datetime
     user: Optional[UserViewSchema]
-    comments: Optional[list[CommentViewSchema]]
+    comments: Optional[AllCommentsViewSchema]
 
 
 class AllPostsViewSchema(BaseTafakariSchema):
@@ -88,7 +95,7 @@ class SubredditViewSchema(CreateSubredditRequestSchema):
     """Subreddit Response Schema"""
 
     id: int
-    members: Optional[list[UserViewSchema]]
+    members: Optional[AllUsersViewSchema]
     created_on: datetime.datetime
 
 
