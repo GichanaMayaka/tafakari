@@ -85,7 +85,9 @@ def update_comment(
                 created_on=updated_comment.created_on,
                 user=UserViewSchema.from_orm(current_user),
                 post_id=post_id,
-                parent_id=update_comment.parent_id,
+                parent_id=None
+                if not updated_comment.parent_id
+                else updated_comment.parent_id,
             ).dict()
 
             cache.delete(f"post_{post_id}")

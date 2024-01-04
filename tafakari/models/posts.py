@@ -44,7 +44,6 @@ class Post(db.Model, CRUDMixin):
     def __repr__(self) -> str:
         return f"<Post: {self.title}>"
 
-    @cache.memoize(timeout=configs.CACHE_DEFAULT_TIMEOUT)
     def get_all_post_comments(self) -> AllCommentsViewSchema:
         """Returns all Comments in this Post
 
