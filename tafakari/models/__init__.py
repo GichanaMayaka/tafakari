@@ -12,7 +12,7 @@ class CRUDMixin(object):
 
     __table_args__ = {"extend_existing": True}
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True, autoincrement=True)
     modified_on = db.Column(
         db.DateTime(timezone=True), default=pendulum.now, nullable=False
     )

@@ -53,10 +53,9 @@ class ProdConfig(BaseConfigs):
         env_file = ".env.prod"
 
 
-class TestConfig(BaseConfigs):
+class TestConfig(DevConfig):
     """Testing configurations"""
 
-    DEBUG: Final[bool] = True
     TESTING: Final[bool] = True
 
     class Config:
