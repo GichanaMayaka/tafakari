@@ -7,11 +7,10 @@ from flask_pydantic import validate
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
-from tafakari.configs import configs
-
 from ..extensions import cache, limiter
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from ..utils import CACHE_KEYS_REFERENCE, cache_invalidator, cache_setter
 from .schemas import (
     AllSubredditsViewSchema,
     CreateSubredditRequestSchema,
@@ -52,11 +51,8 @@ def create_subreddit(body: CreateSubredditRequestSchema) -> tuple[Response, int]
             created_on=new_subreddit.created_on,
         ).dict()
 
-        cache.set(
-            f"subreddit_{new_subreddit.id}",
-            created_subreddit,
-            timeout=configs.CACHE_DEFAULT_TIMEOUT,
-        )
+        cache_key = CACHE_KEYS_REFERENCE["SUBREDDIT_ID"](f"{new_subreddit.id}")
+        cache_setter(cache_key, created_subreddit)
         return jsonify(message="created"), HTTPStatus.CREATED
 
     return (
@@ -98,9 +94,18 @@ def update_a_subreddit(
                 members=subreddit.get_members(),
             ).dict()
 
-            cache.set(f"subreddit_{updated_subreddit.id}", response)
-            cache.delete(f"{current_user.username}_profile")
-            cache.delete("all_subs")
+            # Build relevant cache keys for setting and invalidation
+            subreddit_cache_key = CACHE_KEYS_REFERENCE["SUBREDDIT_ID"](
+                f"{updated_subreddit.id}"
+            )
+            current_user_profile_cache_key = CACHE_KEYS_REFERENCE["PROFILE"](
+                f"{current_user.username}"
+            )
+            all_subreddits_cache_key = CACHE_KEYS_REFERENCE["ALL_SUBREDDITS"]
+            cache_setter(subreddit_cache_key, response)
+            cache_invalidator(
+                [current_user_profile_cache_key, all_subreddits_cache_key]
+            )
             return jsonify(response), HTTPStatus.ACCEPTED
 
         return (
@@ -122,7 +127,8 @@ def get_all_subreddits() -> tuple[Response, int]:
     Returns:
         tuple[Response, int]: Response Object and Status Code
     """
-    cached_data = cache.get("all_subs")
+    cache_key = CACHE_KEYS_REFERENCE["ALL_SUBREDDITS"]
+    cached_data = cache.get(cache_key)
 
     if not cached_data:
         all_subs = Subreddit.query.all()
@@ -142,7 +148,7 @@ def get_all_subreddits() -> tuple[Response, int]:
 
             response = AllSubredditsViewSchema(subreddits=all_subs_response).dict()
 
-            cache.set("all_subs", response)
+            cache_setter(cache_key, response)
             return (
                 jsonify(response),
                 HTTPStatus.OK,
@@ -164,7 +170,8 @@ def get_subreddit_by_id(subreddit_id: int) -> tuple[Response, int]:
     Returns:
         tuple[Response, int]: Response Object and Status Code
     """
-    cached_data = cache.get(f"subreddit_{subreddit_id}")
+    cache_key = CACHE_KEYS_REFERENCE["SUBREDDIT_ID"](subreddit_id)
+    cached_data = cache.get(cache_key)
 
     if not cached_data:
         subreddit = Subreddit.query.filter(Subreddit.id == subreddit_id).first()
@@ -178,11 +185,7 @@ def get_subreddit_by_id(subreddit_id: int) -> tuple[Response, int]:
                 created_on=subreddit.created_on,
             ).dict()
 
-            cache.set(
-                f"subreddit_{subreddit_id}",
-                response,
-                timeout=configs.CACHE_DEFAULT_TIMEOUT,
-            )
+            cache_setter(cache_key, response)
             return (
                 jsonify(response),
                 HTTPStatus.OK,
@@ -220,14 +223,15 @@ def join_a_subreddit(subreddit_id: int) -> tuple[Response, int]:
                 created_on=subreddit.created_on,
             ).dict()
 
-            cache.set(
-                f"subreddit_{subreddit.id}",
-                updated_subreddit,
-                timeout=configs.CACHE_DEFAULT_TIMEOUT,
+            subreddit_id_cache_key = CACHE_KEYS_REFERENCE["SUBREDDIT_ID"](subreddit.id)
+            cache_setter(subreddit_id_cache_key, updated_subreddit)
+            cache_invalidator(
+                [
+                    CACHE_KEYS_REFERENCE["ALL_SUBREDDITS"],
+                    CACHE_KEYS_REFERENCE["PROFILE"](current_user.username),
+                    subreddit_id_cache_key,
+                ]
             )
-            cache.delete(f"subreddit_{subreddit.id}")
-            cache.delete("all_subs")
-            cache.delete(f"{current_user.username}_profile")
             return (
                 jsonify(
                     message=f"Successfully joined {subreddit.name}",
@@ -266,6 +270,13 @@ def delete_a_subreddit(subreddit_id: int) -> tuple[Response, int]:
 
             cache.delete(f"subreddit_{subreddit_id}")
             cache.delete("all_subs")
+            cache_invalidator(
+                [
+                    CACHE_KEYS_REFERENCE["ALL_SUBREDDITS"],
+                    CACHE_KEYS_REFERENCE["SUBREDDIT_ID"](subreddit_id),
+                    CACHE_KEYS_REFERENCE["PROFILE"](current_user.username),
+                ]
+            )
             return jsonify(message="Deleted Successfully"), HTTPStatus.ACCEPTED
 
     return (

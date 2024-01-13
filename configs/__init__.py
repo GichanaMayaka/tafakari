@@ -42,17 +42,6 @@ class DevConfig(BaseConfigs):
     DEBUG: Final[bool] = True
 
 
-class ProdConfig(BaseConfigs):
-    """Production configurations."""
-
-    DEBUG: Final[bool] = False
-
-    class Config:
-        """Environment Configurations"""
-
-        env_file = ".env.prod"
-
-
 class TestConfig(DevConfig):
     """Testing configurations"""
 
@@ -62,6 +51,23 @@ class TestConfig(DevConfig):
         """Environment Configurations"""
 
         env_file = ".env.test"
+
+
+class ProdConfig(BaseConfigs):
+    """Production configurations."""
+
+    # For postgres docker container
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+
+    DEBUG: Final[bool] = False
+    TESTING: Final[bool] = False
+
+    class Config:
+        """Environment Configurations"""
+
+        env_file = ".env.prod"
 
 
 def factory() -> DevConfig | TestConfig | ProdConfig:

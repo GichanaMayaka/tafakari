@@ -1,7 +1,11 @@
 from logging import Logger, getLogger
 from logging.config import dictConfig
+from typing import Any, Callable, Final
 
 from flask import Flask, Request
+
+from .extensions import cache
+from ..configs import configs
 
 
 def get_client_ip_address(client_request: Request) -> str | None:
@@ -78,3 +82,44 @@ def get_logger_instance(current_app: Flask) -> Logger:
         logger = current_app.logger
 
     return logger
+
+
+CACHE_KEYS_REFERENCE: Final[dict[str, str | Callable]] = {
+    "PROFILE": lambda username: f"{username}_profile",
+    "ALL_SUBREDDITS": "all_subs",
+    "SUBREDDIT_ID": lambda subreddit_id: f"subreddit_{subreddit_id}",
+    "ALL_POSTS": "all_posts",
+    "POST_ID": lambda post_id: f"post_{post_id}",
+    "ALL_POSTS_IN_SUBREDDIT": lambda subreddit_id: f"all_posts_in_subreddit_{subreddit_id}",
+}
+
+
+def cache_invalidator(cache_key: str | list | None = None) -> bool:
+    """Invalidates a key from Cache
+
+    Args:
+        cache_key (str, list, optional): The Key or list of keys to Invalidate. Defaults to None.
+
+    Returns:
+        bool: Returns True if successful, otherwise False
+    """
+    if isinstance(cache_key, list):
+        return cache.delete_many(*cache_key)
+
+    return cache.delete(cache_key)
+
+
+def cache_setter(
+    cache_key: str, value: Any, timeout: int = configs.CACHE_DEFAULT_TIMEOUT
+) -> bool | None:
+    """Sets a key in Cache
+
+    Args:
+        cache_key (str): The Cache Key
+        value (Any): The Value to set in Cache
+        timeout (int, optional): The TTL in Seconds. Defaults to configs.CACHE_DEFAULT_TIMEOUT.
+
+    Returns:
+        bool | None: Returns True if successful, otherwise False
+    """
+    return cache.set(cache_key, value, timeout=timeout)

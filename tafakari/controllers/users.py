@@ -9,7 +9,7 @@ from ..models.comments import Comments
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
-from ..utils import get_logger_instance
+from ..utils import CACHE_KEYS_REFERENCE, cache_setter, get_logger_instance
 from .schemas import (
     AllCommentsViewSchema,
     AllPostsViewSchema,
@@ -32,7 +32,8 @@ def get_profile() -> tuple[Response | str, int]:
     Returns:
         tuple[Response | str, int]: Response Object and Status Code
     """
-    cached_data = cache.get(f"{current_user.username}_profile")
+    profile_cache_key = CACHE_KEYS_REFERENCE["PROFILE"](f"{current_user.username}")
+    cached_data = cache.get(profile_cache_key)
     logger = get_logger_instance(current_app=current_app)
 
     if not cached_data:
@@ -121,7 +122,8 @@ def get_profile() -> tuple[Response | str, int]:
                     current_user.username,
                     configs.CACHE_DEFAULT_TIMEOUT,
                 )
-                cache.set(f"{current_user.username}_profile", response)
+
+                cache_setter(profile_cache_key, response)
                 logger.info(
                     "Successfully served profile data for user %s from the database.",
                     current_user.username,

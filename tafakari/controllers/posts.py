@@ -12,6 +12,7 @@ from ..extensions import cache, limiter
 from ..models.posts import Post
 from ..models.subreddit import Subreddit
 from ..models.users import User
+from ..utils import CACHE_KEYS_REFERENCE, cache_invalidator, cache_setter
 from .schemas import (
     AllPostsViewSchema,
     CreatePostRequestSchema,
@@ -56,10 +57,14 @@ def create_subreddit_post(body: CreatePostRequestSchema) -> tuple[Response, int]
             comments=None,
         ).dict()
 
-        cache.set(f"post_{new_post.id}", created_post)
-        cache.delete(f"{current_user.username}_profile")
-        cache.delete(f"all_posts_in_subreddit_{subreddit.id}")
-        cache.delete("all_posts")
+        cache_setter(CACHE_KEYS_REFERENCE["POST_ID"](new_post.id), created_post)
+        cache_invalidator(
+            [
+                CACHE_KEYS_REFERENCE["PROFILE"](current_user.username),
+                CACHE_KEYS_REFERENCE["ALL_POSTS"],
+                CACHE_KEYS_REFERENCE["ALL_POSTS_IN_SUBREDDIT"](subreddit.id),
+            ]
+        )
         return (
             jsonify(message=f"Post {new_post.title} created", timestamp=pendulum.now()),
             HTTPStatus.CREATED,
@@ -119,9 +124,13 @@ def update_subreddit_post(
                 comments=post.get_all_post_comments(),
             ).dict()
 
-            cache.set(f"post_{post_id}", response)
-            cache.delete("all_posts")
-            cache.delete(f"{current_user.username}_profile")
+            cache_setter(CACHE_KEYS_REFERENCE["POST_ID"](post_id), response)
+            cache_invalidator(
+                [
+                    CACHE_KEYS_REFERENCE["ALL_POSTS"],
+                    CACHE_KEYS_REFERENCE["PROFILE"](current_user.username),
+                ]
+            )
             return jsonify(response), HTTPStatus.ACCEPTED
 
         return (
@@ -143,7 +152,8 @@ def get_all_posts() -> tuple[Response | str, int]:
     Returns:
         tuple[Response | str, int]: Response Object and Status Code
     """
-    cached_data = cache.get("all_posts")
+    cache_key = CACHE_KEYS_REFERENCE["ALL_POSTS"]
+    cached_data = cache.get(cache_key)
 
     if not cached_data:
         all_posts = Post.query.all()
@@ -172,7 +182,7 @@ def get_all_posts() -> tuple[Response | str, int]:
                 exclude_none=True
             )
 
-            cache.set("all_posts", response, timeout=configs.CACHE_DEFAULT_TIMEOUT)
+            cache_setter(cache_key, response)
 
             return (
                 jsonify(response),
@@ -181,7 +191,7 @@ def get_all_posts() -> tuple[Response | str, int]:
 
         return jsonify(message="No Post Found"), HTTPStatus.NOT_FOUND
 
-    return cached_data, HTTPStatus.OK
+    return jsonify(cached_data), HTTPStatus.OK
 
 
 @posts.route("/subreddits/<int:subreddit_id>/posts", methods=["GET"])
@@ -195,7 +205,9 @@ def get_all_posts_in_subreddit(subreddit_id: int) -> tuple[Response | str, int]:
     Returns:
         tuple[Response | str, int]: Response Object and Status Code
     """
-    cached_data = cache.get(f"all_posts_in_subreddit_{subreddit_id}")
+    # TODO: Fix bug where controller fetches stale data after upvote action
+    cache_key = CACHE_KEYS_REFERENCE["ALL_POSTS_IN_SUBREDDIT"](subreddit_id)
+    cached_data = cache.get(cache_key)
 
     if not cached_data:
         subreddit: Subreddit = Subreddit.get_by_id(subreddit_id)
@@ -226,11 +238,7 @@ def get_all_posts_in_subreddit(subreddit_id: int) -> tuple[Response | str, int]:
                     exclude_none=True
                 )
 
-                cache.set(
-                    f"all_posts_in_subreddit_{subreddit_id}",
-                    response,
-                    timeout=configs.CACHE_DEFAULT_TIMEOUT,
-                )
+                cache_setter(cache_key, response)
                 return (
                     jsonify(response),
                     HTTPStatus.OK,
@@ -240,7 +248,7 @@ def get_all_posts_in_subreddit(subreddit_id: int) -> tuple[Response | str, int]:
 
         return jsonify(message="Subreddit Not Found"), HTTPStatus.NOT_FOUND
 
-    return cached_data, HTTPStatus.OK
+    return jsonify(cached_data), HTTPStatus.OK
 
 
 @posts.route("/posts/<int:post_id>", methods=["GET"])
@@ -254,7 +262,8 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
     Returns:
         tuple[Response | str, int]: Response Object and Status Code
     """
-    cached_data = cache.get(f"post_{post_id}")
+    cache_key = CACHE_KEYS_REFERENCE["POST_ID"](post_id)
+    cached_data = cache.get(cache_key)
 
     if not cached_data:
         post: Post = Post.get_by_id(post_id)
@@ -278,7 +287,7 @@ def get_post_by_id(post_id: int) -> tuple[Response | str, int]:
                     created_on=post.created_on,
                 ).dict()
 
-                cache.set(f"post_{post_id}", post_response)
+                cache_setter(cache_key, post_response)
                 return jsonify(post_response), HTTPStatus.OK
 
         return jsonify(message="Post Not Found"), HTTPStatus.NOT_FOUND
@@ -304,9 +313,14 @@ def upvote_a_post(post_id: int) -> tuple[Response, int]:
     if post and current_user:
         post.update(votes=post.votes + 1)
 
-        cache.delete("all_posts")
-        cache.delete(f"post_{post_id}")
-        cache.delete(f"{current_user.username}_profile")
+        cache.delete(CACHE_KEYS_REFERENCE["POST_ID"](post.id))
+        cache_invalidator(
+            [
+                CACHE_KEYS_REFERENCE["ALL_POSTS"],
+                CACHE_KEYS_REFERENCE["PROFILE"](current_user.username),
+                CACHE_KEYS_REFERENCE["ALL_POSTS_IN_SUBREDDIT"](f"{post.belongs_to}"),
+            ]
+        )
         return jsonify(message="Up-voted Successfully"), HTTPStatus.ACCEPTED
 
     return jsonify(message="The post you selected does not exist"), HTTPStatus.NOT_FOUND
